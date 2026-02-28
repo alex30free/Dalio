@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Economic Cycle Navigator — Dalio · Marks Framework</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --bg2: #0f1218;
+    --bg3: #141820;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.15);
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --red: #e05252;
+    --green: #4caf82;
+    --blue: #5b8dee;
+    --purple: #9b72cf;
+    --orange: #e07d3c;
+    --text: #e8e4dc;
+    --text-dim: #8a8680;
+    --text-muted: #5a5650;
+    --early: #4caf82;
+    --mid: #5b8dee;
+    --late: #e07d3c;
+    --recession: #e05252;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    background: rgba(10,12,16,0.96);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    z-index: 500;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+  }
+  .nav-link {
+    padding: 14px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.2s;
+    border-bottom: 2px solid transparent;
+  }
+  .nav-link:hover { color: var(--gold); border-bottom-color: rgba(201,168,76,0.3); }
+
+  /* ── HEADER ── */
+  header {
+    padding: 60px 40px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 3px;
+    color: var(--gold); text-transform: uppercase;
+    margin-bottom: 16px;
+    opacity: 0; animation: fadeUp 0.6s 0.1s forwards;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 5vw, 64px);
+    font-weight: 900; line-height: 1.1;
+    opacity: 0; animation: fadeUp 0.7s 0.2s forwards;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+  .header-sub {
+    margin-top: 16px; color: var(--text-dim);
+    font-size: 15px; max-width: 680px;
+    opacity: 0; animation: fadeUp 0.7s 0.3s forwards;
+  }
+  .header-meta {
+    margin-top: 24px; display: flex; gap: 32px; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp 0.7s 0.4s forwards;
+  }
+  .meta-chip {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: var(--text-muted); letter-spacing: 1px;
+  }
+  .meta-chip .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold); animation: pulse 2s infinite;
+  }
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--green); background: rgba(76,175,130,0.1);
+    border: 1px solid rgba(76,175,130,0.2);
+    padding: 3px 8px; border-radius: 3px;
+  }
+  .live-badge .blink {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--green); animation: blink 1.2s infinite;
+  }
+
+  /* ── CYCLE BANNER ── */
+  .cycle-banner {
+    padding: 20px 40px;
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    opacity: 0; animation: fadeUp 0.7s 0.5s forwards;
+  }
+  .cycle-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 2px;
+    color: var(--text-muted); text-transform: uppercase;
+  }
+  .cycle-phases { display: flex; gap: 4px; flex: 1; max-width: 600px; }
+  .phase {
+    flex: 1; padding: 8px 12px; border-radius: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    text-align: center; border: 1px solid transparent;
+  }
+  .phase.early { background: rgba(76,175,130,0.1); border-color: rgba(76,175,130,0.3); color: var(--early); }
+  .phase.mid   { background: rgba(91,141,238,0.1); border-color: rgba(91,141,238,0.3); color: var(--blue); }
+  .phase.late  { background: rgba(224,125,60,0.15); border-color: rgba(224,125,60,0.4); color: var(--orange); font-weight: 500; box-shadow: 0 0 12px rgba(224,125,60,0.2); }
+  .phase.recession { background: rgba(224,82,82,0.1); border-color: rgba(224,82,82,0.2); color: var(--recession); }
+  .phase-arrow { display: flex; align-items: center; color: var(--text-muted); font-size: 12px; }
+  .current-tag {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px;
+    padding: 4px 10px;
+    background: rgba(224,125,60,0.15); border: 1px solid rgba(224,125,60,0.3);
+    color: var(--orange); border-radius: 3px; text-transform: uppercase;
+  }
+
+  /* ── MAIN ── */
+  .main { padding: 40px; max-width: 1600px; margin: 0 auto; }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 700; margin-bottom: 8px;
+  }
+  .section-title span { color: var(--gold); }
+  .section-desc { color: var(--text-dim); font-size: 14px; margin-bottom: 32px; max-width: 700px; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* ── QUADRANT GRID ── */
+  .quadrant-grid {
+    display: grid; grid-template-columns: repeat(2,1fr);
+    gap: 2px; margin-bottom: 48px;
+    border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  }
+  .quadrant {
+    background: var(--bg2); padding: 32px;
+    opacity: 0; animation: fadeUp 0.6s forwards;
+  }
+  .quadrant:nth-child(1){animation-delay:.1s;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .quadrant:nth-child(2){animation-delay:.2s;border-bottom:1px solid var(--border);}
+  .quadrant:nth-child(3){animation-delay:.3s;border-right:1px solid var(--border);}
+  .quadrant:nth-child(4){animation-delay:.4s;}
+
+  .quadrant-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
+  .quadrant-icon {
+    width: 44px; height: 44px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .q-credit .quadrant-icon   { background: rgba(91,141,238,0.12); }
+  .q-inflation .quadrant-icon{ background: rgba(201,168,76,0.12); }
+  .q-labor .quadrant-icon    { background: rgba(76,175,130,0.12); }
+  .q-market .quadrant-icon   { background: rgba(155,114,207,0.12); }
+
+  .quadrant-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; line-height: 1.2; }
+  .q-credit .quadrant-title   { color: var(--blue); }
+  .q-inflation .quadrant-title{ color: var(--gold); }
+  .q-labor .quadrant-title    { color: var(--green); }
+  .q-market .quadrant-title   { color: var(--purple); }
+  .quadrant-subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 2px;
+    color: var(--text-muted); text-transform: uppercase; margin-top: 4px;
+  }
+
+  /* ── KPI CARD ── */
+  .kpi-list { display: flex; flex-direction: column; gap: 14px; }
+
+  .kpi-card {
+    background: var(--bg3);
+    border: 1px solid var(--border); border-radius: 6px; padding: 16px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .kpi-card:hover { border-color: var(--border-bright); transform: translateX(3px); }
+
+  .kpi-top {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 12px; margin-bottom: 6px;
+  }
+  .kpi-name { font-size: 13px; font-weight: 500; color: var(--text); }
+
+  .kpi-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 3px; white-space: nowrap; flex-shrink: 0;
+  }
+  .badge-danger  { background: rgba(224,82,82,0.15);  color: var(--red);    border: 1px solid rgba(224,82,82,0.25); }
+  .badge-warning { background: rgba(224,125,60,0.15); color: var(--orange); border: 1px solid rgba(224,125,60,0.30); }
+  .badge-ok      { background: rgba(76,175,130,0.12); color: var(--green);  border: 1px solid rgba(76,175,130,0.25); }
+  .badge-neutral { background: rgba(91,141,238,0.12); color: var(--blue);   border: 1px solid rgba(91,141,238,0.25); }
+
+  /* ── SPARKLINE ── */
+  .sparkline-row {
+    display: flex; align-items: center; gap: 10px;
+    margin: 8px 0 10px;
+  }
+  .sparkline-wrap { flex: 1; height: 36px; }
+  .sparkline-wrap svg { width: 100%; height: 100%; display: block; }
+  .spark-current {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px; font-weight: 500;
+    white-space: nowrap; flex-shrink: 0;
+  }
+
+  .kpi-explain { font-size: 12px; color: var(--text-dim); line-height: 1.5; margin-bottom: 10px; }
+  .kpi-analogy {
+    font-size: 11px; color: var(--gold); font-style: italic;
+    padding: 6px 10px;
+    border-left: 2px solid rgba(201,168,76,0.3);
+    background: rgba(201,168,76,0.04);
+    border-radius: 0 4px 4px 0; margin-bottom: 10px;
+  }
+
+  /* ── FRED CHART TOGGLE ── */
+  .chart-toggle-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 5px 10px; border-radius: 3px; cursor: pointer;
+    border: 1px solid var(--border-bright);
+    background: transparent; color: var(--text-dim);
+    transition: all 0.2s;
+  }
+  .chart-toggle-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .chart-toggle-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(91,141,238,0.08); }
+
+  .fred-embed {
+    display: none;
+    margin-top: 10px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .fred-embed.visible { display: block; }
+  .fred-embed iframe {
+    width: 100%; height: 280px;
+    border: none; display: block;
+    /* invert dark-on-light FRED charts to blend better */
+    filter: invert(0.88) hue-rotate(180deg) saturate(0.7) brightness(0.95);
+  }
+  .fred-label {
+    position: absolute; bottom: 0; right: 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px; letter-spacing: 1px;
+    color: var(--text-muted);
+    background: rgba(10,12,16,0.8);
+    padding: 3px 7px; border-top-left-radius: 4px;
+  }
+
+  .kpi-footer {
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    margin-top: 8px;
+  }
+  .kpi-source { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); }
+  .kpi-source a { color: var(--blue); text-decoration: none; border-bottom: 1px solid rgba(91,141,238,0.3); transition: color 0.2s; }
+  .kpi-source a:hover { color: var(--gold-light); }
+  .kpi-signal { display: flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); }
+  .signal-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .signal-dot.red    { background: var(--red);    box-shadow: 0 0 6px rgba(224,82,82,0.5); }
+  .signal-dot.orange { background: var(--orange); box-shadow: 0 0 6px rgba(224,125,60,0.5); }
+  .signal-dot.green  { background: var(--green);  box-shadow: 0 0 6px rgba(76,175,130,0.5); }
+  .signal-dot.blue   { background: var(--blue);   box-shadow: 0 0 6px rgba(91,141,238,0.5); }
+
+  /* ── ALLOCATION ── */
+  .alloc-grid {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 2px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  }
+  .alloc-phase { background: var(--bg2); padding: 28px 24px; }
+  .alloc-phase-header { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .alloc-phase-name { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .phase-early    .alloc-phase-name { color: var(--early); }
+  .phase-mid      .alloc-phase-name { color: var(--blue); }
+  .phase-late     .alloc-phase-name { color: var(--orange); }
+  .phase-recession.alloc-phase-name { color: var(--red); }
+  .asset-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 8px; }
+  .asset-name { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
+  .asset-bar-wrap { flex: 1; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+  .asset-bar { height: 100%; border-radius: 2px; }
+  .asset-pct { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text); white-space: nowrap; min-width: 32px; text-align: right; }
+  .phase-early     .asset-bar { background: var(--early); }
+  .phase-mid       .asset-bar { background: var(--blue); }
+  .phase-late      .asset-bar { background: var(--orange); }
+  .phase-recession .asset-bar { background: var(--red); }
+
+  /* ── SENTIMENT GAUGES ── */
+  .gauge-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; }
+  .gauge-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 20px; }
+  .gauge-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+  .gauge-name { font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+  .gauge-value { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 500; margin-bottom: 10px; }
+  .gauge-track { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+  .gauge-fill { height: 100%; border-radius: 3px; }
+  .gauge-reading { font-size: 11px; color: var(--text-dim); }
+  .update-note { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); margin-top: 8px; }
+
+  /* ── EXPLAINER ── */
+  .explainer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .explainer-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 32px; opacity: 0; animation: fadeUp 0.6s forwards; }
+  .explainer-card:nth-child(1){animation-delay:.1s}
+  .explainer-card:nth-child(2){animation-delay:.2s}
+  .explainer-card:nth-child(3){animation-delay:.3s}
+  .explainer-card:nth-child(4){animation-delay:.4s}
+  .explainer-num { font-family: 'Playfair Display', serif; font-size: 48px; font-weight: 900; color: rgba(201,168,76,0.15); line-height: 1; margin-bottom: 12px; }
+  .explainer-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 12px; color: var(--gold-light); }
+  .explainer-body { font-size: 13px; color: var(--text-dim); line-height: 1.7; }
+  .explainer-body strong { color: var(--text); font-weight: 500; }
+
+  /* ── INSIGHT BOX ── */
+  .insight-box {
+    margin: 48px 0; padding: 40px;
+    background: linear-gradient(135deg, rgba(201,168,76,0.05) 0%, rgba(155,114,207,0.05) 100%);
+    border: 1px solid rgba(201,168,76,0.2); border-radius: 8px;
+    position: relative; overflow: hidden;
+    opacity: 0; animation: fadeUp 0.7s 0.3s forwards;
+  }
+  .insight-box::before {
+    content: '"'; position: absolute; top: -20px; left: 20px;
+    font-family: 'Playfair Display', serif; font-size: 180px;
+    color: rgba(201,168,76,0.06); line-height: 1; pointer-events: none;
+  }
+  .insight-quote { font-family: 'Playfair Display', serif; font-size: 20px; font-style: italic; line-height: 1.5; color: var(--text); margin-bottom: 16px; max-width: 800px; }
+  .insight-attr { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; }
+
+  /* ── HOW TO ── */
+  .howto-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 12px; }
+  .howto-step { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 24px; }
+  .step-num { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 900; color: var(--gold); opacity: 0.4; line-height: 1; margin-bottom: 12px; }
+  .step-title { font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+  .step-desc { font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+
+  /* ── DISCLAIMER ── */
+  .disclaimer { margin: 24px 0; padding: 16px 20px; background: rgba(224,82,82,0.06); border: 1px solid rgba(224,82,82,0.15); border-radius: 6px; font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+  .disclaimer strong { color: var(--red); }
+
+  /* ── SCORE BAR (sticky bottom) ── */
+  .score-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(10,12,16,0.97); border-top: 1px solid var(--border);
+    backdrop-filter: blur(12px); padding: 10px 40px;
+    display: flex; align-items: center; gap: 24px; z-index: 400; flex-wrap: wrap;
+  }
+  .score-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+  .score-items { display: flex; gap: 8px; flex-wrap: wrap; }
+  .score-item { display: flex; flex-direction: column; gap: 2px; align-items: center; }
+  .score-name { font-family: 'IBM Plex Mono', monospace; font-size: 8px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; }
+  .score-indicator { width: 28px; height: 8px; border-radius: 2px; }
+  .score-overall { margin-left: auto; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: var(--orange); display: flex; align-items: center; gap: 8px; }
+  .score-overall span { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); font-weight: 300; font-style: normal; }
+
+  body { padding-bottom: 62px; }
+
+  /* ── FOOTER ── */
+  footer { padding: 40px; border-top: 1px solid var(--border); text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); letter-spacing: 1px; }
+  footer strong { color: var(--text-dim); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  @keyframes blink  { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:900px){
+    .quadrant-grid,.explainer-grid{grid-template-columns:1fr;}
+    .alloc-grid{grid-template-columns:repeat(2,1fr);}
+    header,.main,nav,footer,.cycle-banner,.score-bar{padding-left:20px;padding-right:20px;}
+  }
+  @media(max-width:600px){
+    .alloc-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-link" href="#dashboard">Dashboard</a>
+  <a class="nav-link" href="#kpis">KPI Quadrants</a>
+  <a class="nav-link" href="#allocation">Allocation Map</a>
+  <a class="nav-link" href="#sentiment">Sentiment</a>
+  <a class="nav-link" href="#framework">Framework</a>
+  <a class="nav-link" href="#howto">How To Read</a>
+</nav>
+
+<!-- HEADER -->
+<header id="dashboard">
+  <div class="header-eyebrow">Dalio · Marks · Senior Analyst Framework</div>
+  <h1>The Economic<br><em>Cycle Navigator</em></h1>
+  <p class="header-sub">A complete dashboard for understanding where we are in the economic machine — built on Ray Dalio's debt cycle framework and Howard Marks's market cycle thinking. Sparklines are drawn from real historical data patterns; click <strong style="color:var(--blue)">📊 Live FRED Chart</strong> on any card to load the official Federal Reserve chart inline.</p>
+  <div class="header-meta">
+    <div class="meta-chip"><span class="dot"></span><span>Last reviewed: February 2026</span></div>
+    <div class="meta-chip"><span class="dot" style="background:var(--blue)"></span><span>Sources: FRED · BIS · BofA · Bloomberg</span></div>
+    <div class="live-badge"><span class="blink"></span>Monthly refresh</div>
+  </div>
+</header>
+
+<!-- CYCLE BANNER -->
+<div class="cycle-banner">
+  <span class="cycle-label">Current cycle position →</span>
+  <div class="cycle-phases">
+    <div class="phase early">Early</div>
+    <div class="phase-arrow">→</div>
+    <div class="phase mid">Mid</div>
+    <div class="phase-arrow">→</div>
+    <div class="phase late">Late ◉</div>
+    <div class="phase-arrow">→</div>
+    <div class="phase recession">Recession</div>
+  </div>
+  <span class="current-tag">⚠ Late Cycle — High Caution</span>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<div class="disclaimer">
+  <strong>Educational use only.</strong> This dashboard is for learning and orientation purposes, not financial advice. Sparkline data reflects historical patterns for illustration. FRED iframes load live official Federal Reserve data when toggled — they require an internet connection. Always verify current readings from official sources before making investment decisions.
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     KPI QUADRANTS
+     ═══════════════════════════════════════════════ -->
+<div id="kpis">
+  <div class="section-title">The Four <span>Quadrants</span></div>
+  <p class="section-desc">Every KPI belongs to one of four domains. Like a doctor taking vital signs, you need all four quadrants to diagnose where the economy truly is. Each card has a sparkline for instant trend context, and a live FRED chart you can load inline.</p>
+
+  <div class="quadrant-grid">
+
+    <!-- ╔══════════════════════════╗
+         ║  Q1 · CREDIT & DEBT     ║
+         ╚══════════════════════════╝ -->
+    <div class="quadrant q-credit">
+      <div class="quadrant-header">
+        <div class="quadrant-icon">💳</div>
+        <div>
+          <div class="quadrant-title">Credit & Debt</div>
+          <div class="quadrant-subtitle">Dalio's Engine Room</div>
+        </div>
+      </div>
+      <div class="kpi-list">
+
+        <!-- KPI 1: Yield Curve -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">Yield Curve (2s10s Spread)</span>
+            <span class="kpi-badge badge-warning">Watching</span>
+          </div>
+          <!-- SPARKLINE -->
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-yc"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--orange)">+0.30%</span>
+          </div>
+          <div class="kpi-explain">The difference between 10-year and 2-year Treasury yields. Normally positive. When inverted (negative), a recession typically follows 12–18 months later. Re-steepening after a long inversion is often when the recession actually arrives.</div>
+          <div class="kpi-analogy">🎓 If borrowing for 10 years is cheaper than for 2 years, markets expect rates to fall — which usually means economic trouble is coming.</div>
+          <!-- FRED TOGGLE -->
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWmB&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/T10Y2Y" target="_blank">FRED: T10Y2Y</a></span>
+            <div class="kpi-signal"><span class="signal-dot orange"></span><span>Re-steepening after inversion — late cycle warning</span></div>
+          </div>
+        </div>
+
+        <!-- KPI 2: HY Spreads -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">High Yield Credit Spreads (HY OAS)</span>
+            <span class="kpi-badge badge-warning">Elevated</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-hy"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--orange)">320 bps</span>
+          </div>
+          <div class="kpi-explain">Extra interest companies pay to borrow vs. the government. Above 500–600 bps signals serious distress. Watch for spikes — they arrive fast and predict equity drawdowns with a short lag.</div>
+          <div class="kpi-analogy">🎓 A bank charging a risky friend 8% while charging a reliable friend 2%. The 6% gap is the "spread." When that gap explodes, the whole lending market freezes up.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWmK&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" target="_blank">FRED: BAMLH0A0HYM2</a></span>
+            <div class="kpi-signal"><span class="signal-dot orange"></span><span>Watch for spike above 500bps as recession signal</span></div>
+          </div>
+        </div>
+
+        <!-- KPI 3: M2 -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">M2 Money Supply (YoY %)</span>
+            <span class="kpi-badge badge-ok">Recovering</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-m2"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--green)">+3.2%</span>
+          </div>
+          <div class="kpi-explain">All money in circulation plus savings accounts, year-over-year. When it contracts (as in 2022–23, first time since the Depression), deflationary risk rises dramatically. Back positive now — deflationary shock receding.</div>
+          <div class="kpi-analogy">🎓 Think of M2 as the total tokens in a board game. More tokens = prices go up. Fewer tokens = the game slows. In 2022 they actually removed tokens for the first time since the 1930s.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWmS&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/M2SL" target="_blank">FRED: M2SL</a></span>
+            <div class="kpi-signal"><span class="signal-dot green"></span><span>Back positive YoY — deflationary shock receding</span></div>
+          </div>
+        </div>
+
+        <!-- KPI 4: Real Fed Funds Rate -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">Real Fed Funds Rate</span>
+            <span class="kpi-badge badge-warning">Restrictive</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-rfr"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--orange)">~2.1%</span>
+          </div>
+          <div class="kpi-explain">Fed Funds Rate minus PCE inflation. When positive and above nominal GDP growth, the Fed is actively slowing the economy. Historically, rates this restrictive have always eventually caused a recession or financial event.</div>
+          <div class="kpi-analogy">🎓 If you borrow at 5% but inflation is 3%, your real cost is 2%. If inflation falls to 1%, your real cost jumps to 4% — much more painful. A high real rate is like putting the economy's car in second gear.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWmZ&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/FEDFUNDS" target="_blank">FRED: FEDFUNDS</a> minus PCE</span>
+            <div class="kpi-signal"><span class="signal-dot orange"></span><span>~2%+ real rate — historically contractionary</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- end Q1 -->
+
+    <!-- ╔══════════════════════════╗
+         ║  Q2 · INFLATION          ║
+         ╚══════════════════════════╝ -->
+    <div class="quadrant q-inflation">
+      <div class="quadrant-header">
+        <div class="quadrant-icon">🌡️</div>
+        <div>
+          <div class="quadrant-title">Inflation & Prices</div>
+          <div class="quadrant-subtitle">The Temperature of the Machine</div>
+        </div>
+      </div>
+      <div class="kpi-list">
+
+        <!-- KPI 5: 5y5y -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">5yr/5yr Forward Inflation Expectations</span>
+            <span class="kpi-badge badge-warning">Above Target</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-5y5y"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--orange)">2.41%</span>
+          </div>
+          <div class="kpi-explain">What the market expects inflation to average in years 5–10 from now. Strips out short-term noise. The Fed watches this obsessively. Above 2.5% = inflation expectations getting unanchored = very bad for bonds.</div>
+          <div class="kpi-analogy">🎓 Not "what will the weather be tomorrow?" but "what do you expect average summers to feel like in 2035?" It tells you the long-term mood, not just today's weather.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWn5&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/T5YIFR" target="_blank">FRED: T5YIFR</a></span>
+            <div class="kpi-signal"><span class="signal-dot orange"></span><span>~2.4% — marginally elevated vs 2% target</span></div>
+          </div>
+        </div>
+
+        <!-- KPI 6: CPI -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">CPI Inflation (YoY %)</span>
+            <span class="kpi-badge badge-ok">Declining</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-cpi"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--green)">~2.9%</span>
+          </div>
+          <div class="kpi-explain">Consumer Price Index — the most widely-cited inflation measure. Tracks the price of a basket of everyday goods. Fed target is 2%. Above 4% = the Fed will tighten hard. Below 2% = risk of deflation.</div>
+          <div class="kpi-analogy">🎓 If your grocery bill was €100 last year and is €103 today, that's 3% CPI. The Fed's job is to keep that number near 2% — not too hot, not too cold, like Goldilocks' porridge.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnb&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/CPIAUCSL" target="_blank">FRED: CPIAUCSL</a></span>
+            <div class="kpi-signal"><span class="signal-dot green"></span><span>Trending down but sticky — last mile problem</span></div>
+          </div>
+        </div>
+
+        <!-- KPI 7: CAPE -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">CAPE Ratio (Shiller P/E)</span>
+            <span class="kpi-badge badge-danger">Stretched</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-cape"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--red)">~35×</span>
+          </div>
+          <div class="kpi-explain">Stock market price divided by 10 years of inflation-adjusted earnings. Long-run average is ~16×. Above 30× = expensive. Above 35× implies historically poor returns for the next decade. Not a timing tool — a return expectation tool.</div>
+          <div class="kpi-analogy">🎓 If you buy a shop for €350,000 that earns €10,000/year, you'd wait 35 years to get your money back. CAPE above 35 says investors are paying 35 years of earnings upfront. That's risky.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWni&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/CAPE" target="_blank">FRED: CAPE</a> · <a href="https://www.multpl.com/shiller-pe" target="_blank">multpl.com</a></span>
+            <div class="kpi-signal"><span class="signal-dot red"></span><span>Top decile. Poor 10yr forward returns implied.</span></div>
+          </div>
+        </div>
+
+        <!-- KPI 8: PPI -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">PPI vs. CPI Spread</span>
+            <span class="kpi-badge badge-ok">Compressing</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-ppi"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--green)">Narrow</span>
+          </div>
+          <div class="kpi-explain">PPI = what companies pay for inputs. CPI = what consumers pay in stores. When PPI > CPI, costs rise faster than companies can charge customers — profit margins get squeezed. Bad for equities.</div>
+          <div class="kpi-analogy">🎓 A pizza shop pays more for flour and cheese (PPI up) but can't raise pizza prices fast enough (CPI lower). The shop earns less. Multiply that by every company in the economy — that's an earnings recession.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWno&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/PPIACO" target="_blank">FRED: PPIACO</a></span>
+            <div class="kpi-signal"><span class="signal-dot green"></span><span>Spread narrowing — margin pressure easing</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- end Q2 -->
+
+    <!-- ╔══════════════════════════╗
+         ║  Q3 · LABOR & GROWTH    ║
+         ╚══════════════════════════╝ -->
+    <div class="quadrant q-labor">
+      <div class="quadrant-header">
+        <div class="quadrant-icon">👷</div>
+        <div>
+          <div class="quadrant-title">Labor & Growth</div>
+          <div class="quadrant-subtitle">The Heartbeat of the Economy</div>
+        </div>
+      </div>
+      <div class="kpi-list">
+
+        <!-- KPI 9: Initial Claims -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">Initial Jobless Claims (Weekly)</span>
+            <span class="kpi-badge badge-ok">Stable</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-claims"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--green)">218k</span>
+          </div>
+          <div class="kpi-explain">How many people filed for unemployment benefits last week. Released every Thursday morning. The earliest tremor of labor market weakness — shows up here months before official unemployment rises above thresholds.</div>
+          <div class="kpi-analogy">🎓 Think of it as the number of people who just got fired this week. If that number suddenly jumps from 200k to 350k over a few months, something is breaking in the economy — and this is the very first place it shows.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnu&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/ICSA" target="_blank">FRED: ICSA</a> (every Thursday)</span>
+            <div class="kpi-signal"><span class="signal-dot green"></span><span>~218k/week — still healthy but watch the trend</span></div>
+          </div>
+        </div>
+
+        <!-- KPI 10: Sahm Rule -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">Sahm Rule Recession Indicator</span>
+            <span class="kpi-badge badge-ok">Below Trigger</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-sahm"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--green)">0.20</span>
+          </div>
+          <div class="kpi-explain">Triggers when the 3-month average unemployment rate rises 0.5 percentage points above its 12-month low. 100% accurate recession predictor since 1970. Zero false signals. When it fires, act immediately.</div>
+          <div class="kpi-analogy">🎓 Like a smoke detector tuned to ignore small cooking smoke but instantly alarm at real fire. The Sahm Rule ignores normal unemployment fluctuations but triggers the moment a real systemic deterioration begins.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnz&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/SAHMREALTIME" target="_blank">FRED: SAHMREALTIME</a></span>
+            <div class="kpi-signal"><span class="signal-dot green"></span><span>Any reading ≥ 0.50 = recession signal. Act.</span></div>
+          </div>
+        </div>
+
+        <!-- KPI 11: JOLTS Quits -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">JOLTS Quits Rate</span>
+            <span class="kpi-badge badge-warning">Declining</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-jolts"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--orange)">2.1%</span>
+          </div>
+          <div class="kpi-explain">Percentage of workers who voluntarily quit. High = workers confident they'll find something better. Declining = workers scared to quit = labor market softening. Leads official unemployment by months.</div>
+          <div class="kpi-analogy">🎓 If your friend leaves a decent job because they know they'll find something better tomorrow — the market is hot. If they stay in a job they hate out of fear — the market is cooling. This measures how brave workers feel collectively.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnE&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/JTSQUR" target="_blank">FRED: JTSQUR</a> (monthly, JOLTS)</span>
+            <div class="kpi-signal"><span class="signal-dot orange"></span><span>Declining from peak — labor confidence softening</span></div>
+          </div>
+        </div>
+
+        <!-- KPI 12: DXY -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">US Dollar Index (DXY)</span>
+            <span class="kpi-badge badge-warning">Strong</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-dxy"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--orange)">107.2</span>
+          </div>
+          <div class="kpi-explain">Value of the USD vs. a basket of world currencies. A strong dollar tightens global financial conditions, hurts EM economies with dollar-denominated debt, and compresses US multinational earnings. Dollar peak often coincides with market inflection points.</div>
+          <div class="kpi-analogy">🎓 If you borrowed in dollars and the dollar strengthens vs. your local currency, your debt just got bigger in local terms — even though you borrowed the same amount. A strong dollar is a hidden tax on the global economy.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnJ&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/DTWEXBGS" target="_blank">FRED: DTWEXBGS</a></span>
+            <div class="kpi-signal"><span class="signal-dot orange"></span><span>Elevated — peak = signal to add EM & commodities</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- end Q3 -->
+
+    <!-- ╔══════════════════════════╗
+         ║  Q4 · MARKET PSYCHOLOGY ║
+         ╚══════════════════════════╝ -->
+    <div class="quadrant q-market">
+      <div class="quadrant-header">
+        <div class="quadrant-icon">🧠</div>
+        <div>
+          <div class="quadrant-title">Market Psychology</div>
+          <div class="quadrant-subtitle">Howard Marks's Domain</div>
+        </div>
+      </div>
+      <div class="kpi-list">
+
+        <!-- KPI 13: ERP -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">Equity Risk Premium (ERP)</span>
+            <span class="kpi-badge badge-danger">Near Zero</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-erp"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--red)">~0.3%</span>
+          </div>
+          <div class="kpi-explain">Extra return you get for owning stocks vs. risk-free bonds. Formula: (1 ÷ CAPE) − 10yr Treasury yield. Near zero means bonds are almost as attractive as stocks — historically precedes poor equity returns or sharp corrections.</div>
+          <div class="kpi-analogy">🎓 If the government pays 5% risk-free, but stocks might only return 4% (with all that volatility and risk), why own stocks? When the bonus for taking risk disappears, smart money moves to bonds — and stocks must fall to restore the premium.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnN&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 Calculate: (1/CAPE) − <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank">DGS10</a></span>
+            <div class="kpi-signal"><span class="signal-dot red"></span><span>Near zero — stocks expensive relative to bonds</span></div>
+          </div>
+        </div>
+
+        <!-- KPI 14: AAII -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">AAII Sentiment (Bull–Bear Spread)</span>
+            <span class="kpi-badge badge-neutral">Mixed</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-aaii"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--blue)">+8%</span>
+          </div>
+          <div class="kpi-explain">Weekly survey of individual investors: are you bullish, bearish, or neutral? The spread (bulls minus bears) above +30% = dangerous complacency. Below −20% = fear = contrarian buy signal. The crowd is reliably wrong at extremes.</div>
+          <div class="kpi-analogy">🎓 Marks's iron rule: "When everyone is bullish, who's left to buy?" If 70% of investors are optimistic and already invested, there are few people left to drive prices higher. The next surprise tends to go against the consensus.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnS&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://www.aaii.com/sentimentsurvey" target="_blank">AAII.com</a> (free, weekly)</span>
+            <div class="kpi-signal"><span class="signal-dot blue"></span><span>Watch for extremes: Bulls >60% or Bears >50%</span></div>
+          </div>
+        </div>
+
+        <!-- KPI 15: BofA FM Cash -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">BofA Fund Manager Cash Level</span>
+            <span class="kpi-badge badge-warning">Low</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-fm"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--orange)">4.0%</span>
+          </div>
+          <div class="kpi-explain">Monthly BofA survey of 300+ professional fund managers: how much cash are they holding? Below 4% = everyone is fully invested = no dry powder = markets vulnerable. Above 6% = fear = contrarian buy signal. One of Marks's favourite tools.</div>
+          <div class="kpi-analogy">🎓 If all your friends have already put their savings into a hot new restaurant, who's left to invest more? Nobody. When fund managers hold no cash, there's no new money to push prices higher — making markets fragile to any bad news.</div>
+          <!-- No FRED series for BofA data - link to report instead -->
+          <div style="margin: 8px 0;">
+            <a href="https://research.baml.com/article/global-fund-manager-survey" target="_blank" class="chart-toggle-btn" style="text-decoration:none;display:inline-flex;">📊 BofA Monthly Report ↗</a>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 BofA Global Fund Manager Survey (monthly)</span>
+            <div class="kpi-signal"><span class="signal-dot orange"></span><span>~4.0% — dangerously low. Little dry powder remaining.</span></div>
+          </div>
+        </div>
+
+        <!-- KPI 16: Put/Call -->
+        <div class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-name">CBOE Equity Put/Call Ratio</span>
+            <span class="kpi-badge badge-neutral">Neutral</span>
+          </div>
+          <div class="sparkline-row">
+            <div class="sparkline-wrap">
+              <svg viewBox="0 0 200 36" preserveAspectRatio="none" id="spark-pcr"></svg>
+            </div>
+            <span class="spark-current" style="color:var(--blue)">0.78</span>
+          </div>
+          <div class="kpi-explain">Ratio of put options (bets on decline) to call options (bets on rise). Below 0.7 = dangerous complacency — investors aren't buying protection. Above 1.2 = extreme fear = often near a market bottom. Use 10-day moving average to smooth noise.</div>
+          <div class="kpi-analogy">🎓 Count how many people bought umbrella insurance vs. sunshine holiday insurance before summer. Almost nobody buying umbrellas (low put/call) means investors are overconfident it won't rain. Markets love to rain when everyone's unprepared.</div>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnX&width=600&height=280')">📊 Live FRED Chart</button>
+          <div class="fred-embed">
+            <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
+            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-source">📊 <a href="https://www.cboe.com/us/options/market_statistics/" target="_blank">CBOE</a> · TradingView: CPCE or CPC</span>
+            <div class="kpi-signal"><span class="signal-dot green"></span><span>0.78 — neutral. Spike above 1.2 = potential bottom.</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- end Q4 -->
+
+  </div><!-- end quadrant-grid -->
+</div><!-- end #kpis -->
+
+<hr class="divider">
+
+<!-- ALLOCATION MAP -->
+<div id="allocation" style="margin-bottom:48px; opacity:0; animation:fadeUp 0.7s 0.5s forwards;">
+  <div class="section-title">Asset Allocation <span>by Phase</span></div>
+  <p class="section-desc">Based on Dalio's All Weather logic and Marks's cycle positioning. The highlighted phase is our current estimated position.</p>
+  <div class="alloc-grid">
+
+    <div class="alloc-phase phase-early">
+      <div class="alloc-phase-header" style="color:var(--early)">Phase 01</div>
+      <div class="alloc-phase-name">Early Cycle</div>
+      <div class="asset-row"><span class="asset-name">Equities</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:85%"></div></div><span class="asset-pct">85%↑</span></div>
+      <div class="asset-row"><span class="asset-name">Commodities</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:50%"></div></div><span class="asset-pct">Mid</span></div>
+      <div class="asset-row"><span class="asset-name">Gold</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:25%"></div></div><span class="asset-pct">Low</span></div>
+      <div class="asset-row"><span class="asset-name">Cash</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:10%"></div></div><span class="asset-pct">Min</span></div>
+      <div class="asset-row"><span class="asset-name">Long Bonds</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:20%"></div></div><span class="asset-pct">Low</span></div>
+      <div style="margin-top:16px;font-size:11px;color:var(--text-dim);line-height:1.6;">Credit expanding, unemployment falling. Cyclicals, small caps, credit outperform. Be greedy.</div>
+    </div>
+
+    <div class="alloc-phase phase-mid">
+      <div class="alloc-phase-header" style="color:var(--blue)">Phase 02</div>
+      <div class="alloc-phase-name">Mid Cycle</div>
+      <div class="asset-row"><span class="asset-name">Equities</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:65%"></div></div><span class="asset-pct">65%</span></div>
+      <div class="asset-row"><span class="asset-name">Commodities</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:70%"></div></div><span class="asset-pct">High</span></div>
+      <div class="asset-row"><span class="asset-name">Gold</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:40%"></div></div><span class="asset-pct">Mid</span></div>
+      <div class="asset-row"><span class="asset-name">Cash</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:20%"></div></div><span class="asset-pct">Low</span></div>
+      <div class="asset-row"><span class="asset-name">TIPS/Linkers</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:55%"></div></div><span class="asset-pct">Add</span></div>
+      <div style="margin-top:16px;font-size:11px;color:var(--text-dim);line-height:1.6;">Inflation rising, Fed tightening. Rotate to value, energy, real assets. Reduce long-duration bonds.</div>
+    </div>
+
+    <div class="alloc-phase phase-late" style="border:2px solid rgba(224,125,60,0.4);position:relative;">
+      <div style="position:absolute;top:12px;right:12px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--orange);background:rgba(224,125,60,0.15);padding:3px 8px;border-radius:3px;border:1px solid rgba(224,125,60,0.3);">◉ WE ARE HERE</div>
+      <div class="alloc-phase-header" style="color:var(--orange)">Phase 03</div>
+      <div class="alloc-phase-name">Late Cycle</div>
+      <div class="asset-row"><span class="asset-name">Equities</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:30%"></div></div><span class="asset-pct">30%↓</span></div>
+      <div class="asset-row"><span class="asset-name">Gold</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:80%"></div></div><span class="asset-pct">↑ High</span></div>
+      <div class="asset-row"><span class="asset-name">Cash</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:75%"></div></div><span class="asset-pct">↑ High</span></div>
+      <div class="asset-row"><span class="asset-name">Short Bonds</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:65%"></div></div><span class="asset-pct">Add</span></div>
+      <div class="asset-row"><span class="asset-name">Commodities</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:50%"></div></div><span class="asset-pct">Hold</span></div>
+      <div style="margin-top:16px;font-size:11px;color:var(--orange);line-height:1.6;">⚠ Reduce equity beta. Raise cash. Add gold. Move up in quality (Marks's rule). Shorten bond duration.</div>
+    </div>
+
+    <div class="alloc-phase phase-recession">
+      <div class="alloc-phase-header" style="color:var(--red)">Phase 04</div>
+      <div class="alloc-phase-name">Recession</div>
+      <div class="asset-row"><span class="asset-name">Long Bonds</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:85%"></div></div><span class="asset-pct">↑↑ Buy</span></div>
+      <div class="asset-row"><span class="asset-name">Cash</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:70%"></div></div><span class="asset-pct">High</span></div>
+      <div class="asset-row"><span class="asset-name">Gold</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:80%"></div></div><span class="asset-pct">↑ High</span></div>
+      <div class="asset-row"><span class="asset-name">Equities</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:15%"></div></div><span class="asset-pct">Min→Buy</span></div>
+      <div class="asset-row"><span class="asset-name">Commodities</span><div class="asset-bar-wrap"><div class="asset-bar" style="width:20%"></div></div><span class="asset-pct">Low</span></div>
+      <div style="margin-top:16px;font-size:11px;color:var(--text-dim);line-height:1.6;">Cash is king early. Bonds rally (unless inflationary depression). Equities bottom before the economy — max fear = max opportunity.</div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SENTIMENT GAUGES -->
+<div id="sentiment" style="margin-bottom:48px; opacity:0; animation:fadeUp 0.7s 0.6s forwards;">
+  <div class="section-title">Sentiment & <span>Positioning</span></div>
+  <p class="section-desc">Howard Marks's core insight: the biggest risk isn't a bad economy — it's paying too much because everyone else is optimistic. These gauges measure market psychology, not fundamentals.</p>
+  <div class="gauge-grid">
+    <div class="gauge-card">
+      <div class="gauge-label">FRED: T10Y2Y</div>
+      <div class="gauge-name">Yield Curve (2s10s)</div>
+      <div class="gauge-value" style="color:var(--green)">+0.30%</div>
+      <div class="gauge-track"><div class="gauge-fill" style="width:55%;background:var(--green)"></div></div>
+      <div class="gauge-reading">Re-steepening. Recession often hits as curve un-inverts — watch closely.</div>
+    </div>
+    <div class="gauge-card">
+      <div class="gauge-label">Yale / multpl.com</div>
+      <div class="gauge-name">CAPE Shiller P/E</div>
+      <div class="gauge-value" style="color:var(--red)">~35×</div>
+      <div class="gauge-track"><div class="gauge-fill" style="width:88%;background:linear-gradient(90deg,var(--green),var(--orange),var(--red))"></div></div>
+      <div class="gauge-reading">Historical avg: 16×. Top decile valuation. Poor 10yr returns implied.</div>
+    </div>
+    <div class="gauge-card">
+      <div class="gauge-label">FRED: SAHMREALTIME</div>
+      <div class="gauge-name">Sahm Rule Indicator</div>
+      <div class="gauge-value" style="color:var(--green)">0.20</div>
+      <div class="gauge-track"><div class="gauge-fill" style="width:40%;background:var(--green)"></div></div>
+      <div class="gauge-reading">Trigger = 0.50. Currently safe. Monitor monthly without fail.</div>
+    </div>
+    <div class="gauge-card">
+      <div class="gauge-label">FRED: BAMLH0A0HYM2</div>
+      <div class="gauge-name">HY Credit Spreads</div>
+      <div class="gauge-value" style="color:var(--orange)">320 bps</div>
+      <div class="gauge-track"><div class="gauge-fill" style="width:40%;background:linear-gradient(90deg,var(--green),var(--orange))"></div></div>
+      <div class="gauge-reading">Alarm: 500bps+. Crisis: 800bps+. Currently elevated but manageable.</div>
+    </div>
+    <div class="gauge-card">
+      <div class="gauge-label">FRED: M2SL</div>
+      <div class="gauge-name">M2 Money Supply YoY</div>
+      <div class="gauge-value" style="color:var(--green)">+3.2%</div>
+      <div class="gauge-track"><div class="gauge-fill" style="width:55%;background:var(--green)"></div></div>
+      <div class="gauge-reading">Back positive after historic contraction. Deflationary shock receding.</div>
+    </div>
+    <div class="gauge-card">
+      <div class="gauge-label">Derived: (1/CAPE) − DGS10</div>
+      <div class="gauge-name">Equity Risk Premium</div>
+      <div class="gauge-value" style="color:var(--red)">~0.3%</div>
+      <div class="gauge-track"><div class="gauge-fill" style="width:12%;background:var(--red)"></div></div>
+      <div class="gauge-reading">Near zero. Bonds almost as attractive as equities. Historically dangerous.</div>
+    </div>
+  </div>
+  <div class="update-note">* Readings are illustrative based on publicly available data circa early 2026. Check live sources monthly via FRED links in KPI cards.</div>
+</div>
+
+<hr class="divider">
+
+<!-- FRAMEWORK EXPLAINER -->
+<div id="framework">
+  <div class="section-title">Dalio's <span>Three Cycle Framework</span></div>
+  <p class="section-desc">Before any KPI makes sense, you need to understand what economic machine you're reading. Here's the entire model in plain language.</p>
+  <div class="explainer-grid">
+    <div class="explainer-card">
+      <div class="explainer-num">01</div>
+      <div class="explainer-title">The Short-Term Debt Cycle (5–8 years)</div>
+      <div class="explainer-body">Driven entirely by <strong>credit expansion and contraction</strong>. Banks lend → people spend → economy grows → inflation builds → central bank raises rates → credit tightens → recession → rates fall → repeat. The Credit Impulse and Yield Curve tell you exactly where you are in this loop.</div>
+    </div>
+    <div class="explainer-card">
+      <div class="explainer-num">02</div>
+      <div class="explainer-title">The Long-Term Debt Cycle (50–75 years)</div>
+      <div class="explainer-body">Each short-term cycle ends with slightly more total debt than before. Over decades this accumulation becomes structural. <strong>Debt levels become so high that normal monetary policy stops working.</strong> We are in a late-stage long-term cycle. Options: deflation, inflationary devaluation, or restructuring. This is why gold and real assets deserve a structural allocation.</div>
+    </div>
+    <div class="explainer-card">
+      <div class="explainer-num">03</div>
+      <div class="explainer-title">Productivity Growth (The Secular Trend)</div>
+      <div class="explainer-body">Underneath all cycles, <strong>productivity is what actually drives long-term wealth creation</strong>. Technology, innovation, and institutional quality compound over time regardless of debt cycles. The danger: debt supercycles can suppress productivity for a decade or more — Japan post-1990 is the canonical warning.</div>
+    </div>
+    <div class="explainer-card">
+      <div class="explainer-num">04</div>
+      <div class="explainer-title">Howard Marks: The Psychology Overlay</div>
+      <div class="explainer-body">Marks adds the crucial psychological dimension. <strong>Markets cycle between greed and fear faster than the economic cycle below them.</strong> Even in a healthy economy, markets can be dangerously overvalued. His tools: sentiment surveys, positioning data, IPO quality, leverage levels. When everyone is optimistic and fully invested, future returns are low and risk is high — regardless of economic data.</div>
+    </div>
+  </div>
+
+  <div class="insight-box">
+    <div class="insight-quote">"You can't predict. You can prepare. The goal isn't to know exactly where we are in the cycle — it's to know whether to lean toward aggression or defense, and by how much, based on the weight of evidence across all indicators simultaneously."</div>
+    <div class="insight-attr">— Synthesis of Dalio + Marks + 100 years of market history</div>
+  </div>
+
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:32px;margin-top:32px;">
+    <div class="section-title" style="font-size:20px;margin-bottom:12px;">Dalio's <span>"Beautiful" vs. "Ugly" Deleveraging</span></div>
+    <div style="font-size:13px;color:var(--text-dim);line-height:1.8;">
+      When a debt cycle peaks, societies must reduce their debt burden through four levers: <strong style="color:var(--text)">austerity</strong> (deflationary, painful), <strong style="color:var(--text)">debt restructuring</strong> (creditors take losses), <strong style="color:var(--text)">wealth redistribution</strong> (taxes), and <strong style="color:var(--text)">money printing</strong> (central bank monetises debt).<br><br>
+      A <strong style="color:var(--green)">"beautiful deleveraging"</strong> balances all four — enough money printing to avoid depression-level deflation, but not so much that it causes hyperinflation. The US 2010–2019 period was broadly this.<br><br>
+      An <strong style="color:var(--red)">"ugly deleveraging"</strong> uses too much of one lever (usually printing) — causing inflation alongside economic weakness: stagflation. In this scenario <strong style="color:var(--gold)">gold, commodities and real assets dramatically outperform while both stocks AND bonds fail simultaneously</strong> — exactly what 2022 previewed.
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- HOW TO READ -->
+<div id="howto" style="margin-bottom:48px; opacity:0; animation:fadeUp 0.7s 0.4s forwards;">
+  <div class="section-title">How to <span>Read This Dashboard</span></div>
+  <p class="section-desc">A practical 5-step monthly protocol. Don't react to any single indicator — look for confluence across all four quadrants.</p>
+  <div class="howto-steps">
+    <div class="howto-step"><div class="step-num">01</div><div class="step-title">Check Credit Signals First</div><div class="step-desc">Every month: yield curve, HY spreads, credit impulse. These lead everything else by 6–12 months. If 2 of 3 flash warning, prepare to reduce risk.</div></div>
+    <div class="howto-step"><div class="step-num">02</div><div class="step-title">Cross-Check with Labor</div><div class="step-desc">Every Thursday: initial jobless claims. Monthly: Sahm Rule and JOLTS quits. Labor confirms or denies credit signals. It can't be faked.</div></div>
+    <div class="howto-step"><div class="step-num">03</div><div class="step-title">Read Sentiment Independently</div><div class="step-desc">Check BofA FM survey, AAII, and put/call ratio WITHOUT looking at prices first. Is the crowd fearful or greedy? Extreme readings are actionable.</div></div>
+    <div class="howto-step"><div class="step-num">04</div><div class="step-title">Assess the Inflation Regime</div><div class="step-desc">Check 5yr/5yr expectations and real rates. Inflation rising + growth slowing = stagflation → gold and commodities. Falling + slowing = deflationary → long bonds and cash.</div></div>
+    <div class="howto-step"><div class="step-num">05</div><div class="step-title">Require Confluence to Act</div><div class="step-desc">Only shift allocation when 5+ indicators agree. Move in thirds — never all at once. The goal is calibration over time, not binary market timing.</div></div>
+  </div>
+
+  <!-- QUICK REFERENCE TABLE -->
+  <div style="margin-top:32px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+    <div style="padding:24px 28px;border-bottom:1px solid var(--border);">
+      <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:700;">Quick Reference: Signal → Action</div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:rgba(255,255,255,0.03);">
+            <th style="padding:12px 20px;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-muted);font-weight:400;border-bottom:1px solid var(--border);">INDICATOR</th>
+            <th style="padding:12px 20px;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--red);font-weight:400;border-bottom:1px solid var(--border);">BEAR SIGNAL</th>
+            <th style="padding:12px 20px;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--green);font-weight:400;border-bottom:1px solid var(--border);">BULL SIGNAL</th>
+            <th style="padding:12px 20px;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-muted);font-weight:400;border-bottom:1px solid var(--border);">ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:12px 20px;color:var(--blue);">Yield Curve</td><td style="padding:12px 20px;color:var(--text-dim);">Inverted AND re-steepening</td><td style="padding:12px 20px;color:var(--text-dim);">Positive & steepening</td><td style="padding:12px 20px;color:var(--text-dim);">Re-steepen → raise cash & gold</td></tr>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:12px 20px;color:var(--blue);">HY Spreads</td><td style="padding:12px 20px;color:var(--text-dim);">&gt;500bps rising</td><td style="padding:12px 20px;color:var(--text-dim);">&lt;300bps tightening</td><td style="padding:12px 20px;color:var(--text-dim);">Spike → buy quality bonds</td></tr>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:12px 20px;color:var(--gold);">CAPE Ratio</td><td style="padding:12px 20px;color:var(--text-dim);">&gt;35×</td><td style="padding:12px 20px;color:var(--text-dim);">&lt;20×</td><td style="padding:12px 20px;color:var(--text-dim);">High CAPE → reduce equity weight</td></tr>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:12px 20px;color:var(--gold);">5yr/5yr Inflation</td><td style="padding:12px 20px;color:var(--text-dim);">&gt;2.8% rising</td><td style="padding:12px 20px;color:var(--text-dim);">&lt;2% falling</td><td style="padding:12px 20px;color:var(--text-dim);">Rising → add gold, TIPS, commodities</td></tr>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:12px 20px;color:var(--green);">Sahm Rule</td><td style="padding:12px 20px;color:var(--text-dim);">≥ 0.50</td><td style="padding:12px 20px;color:var(--text-dim);">≤ 0.20</td><td style="padding:12px 20px;color:var(--text-dim);">Trigger → immediate defensive shift</td></tr>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:12px 20px;color:var(--green);">Jobless Claims</td><td style="padding:12px 20px;color:var(--text-dim);">&gt;350k/week</td><td style="padding:12px 20px;color:var(--text-dim);">&lt;250k/week</td><td style="padding:12px 20px;color:var(--text-dim);">Rising trend → reduce cyclicals</td></tr>
+          <tr style="border-bottom:1px solid var(--border);"><td style="padding:12px 20px;color:var(--purple);">FM Cash Level</td><td style="padding:12px 20px;color:var(--text-dim);">&lt;4% (all-in)</td><td style="padding:12px 20px;color:var(--text-dim);">&gt;6% (fearful)</td><td style="padding:12px 20px;color:var(--text-dim);">Low cash → expect correction</td></tr>
+          <tr><td style="padding:12px 20px;color:var(--purple);">Put/Call Ratio</td><td style="padding:12px 20px;color:var(--text-dim);">&lt;0.70 (complacent)</td><td style="padding:12px 20px;color:var(--text-dim);">&gt;1.20 (fear)</td><td style="padding:12px 20px;color:var(--text-dim);">Spike → possible buy signal</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- MASTER LESSON -->
+<div style="opacity:0;animation:fadeUp 0.7s 0.3s forwards;margin-bottom:48px;">
+  <div class="section-title">The <span>Master Lesson</span></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+    <div style="background:var(--bg2);border:1px solid rgba(91,141,238,0.2);border-radius:8px;padding:28px;">
+      <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--blue);margin-bottom:12px;font-weight:700;">Ray Dalio Says</div>
+      <div style="font-size:13px;color:var(--text-dim);line-height:1.7;">Credit creates cycles. Debt accumulates over generations. The machine is mechanical — but human emotion makes it irregular. Understand the template. Don't fight it. Diversify across assets that do well in different environments. The All Weather portfolio exists precisely because no one can know the future with certainty.</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid rgba(155,114,207,0.2);border-radius:8px;padding:28px;">
+      <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--purple);margin-bottom:12px;font-weight:700;">Howard Marks Says</div>
+      <div style="font-size:13px;color:var(--text-dim);line-height:1.7;">You will never know exactly where we are. But you can know whether to lean toward aggression or defense. The biggest risk is not volatility — it's permanent loss of capital. That risk rises when optimism is extreme and valuations are stretched. Be a contrarian: fearful when others are greedy, greedy when others are fearful.</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid rgba(201,168,76,0.2);border-radius:8px;padding:28px;">
+      <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--gold);margin-bottom:12px;font-weight:700;">The Analyst Says</div>
+      <div style="font-size:13px;color:var(--text-dim);line-height:1.7;">Watch the dashboard monthly. Require confluence of 5+ indicators before major shifts. Move in thirds — never all at once. In late cycle: reduce equity beta, raise quality, add gold and short-duration bonds, build cash. The patient investor who survives every cycle ends up owning the world. Patience is the ultimate edge.</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end .main -->
+
+<!-- FOOTER -->
+<footer>
+  <strong>Economic Cycle Navigator</strong> · Educational Dashboard · Built on Dalio & Marks Framework<br>
+  <span style="margin-top:8px;display:block;">Data sources: FRED · BIS · BofA · AAII · CBOE · Yale (Shiller) · BLS. Sparklines illustrative — verify monthly from primary sources linked above.</span>
+  <span style="margin-top:6px;display:block;font-size:10px;">Not financial advice. For educational purposes only.</span>
+</footer>
+
+<!-- STICKY SCORE BAR -->
+<div class="score-bar">
+  <span class="score-label">Signals →</span>
+  <div class="score-items">
+    <div class="score-item"><span class="score-name">Yield Curve</span><div class="score-indicator" style="background:var(--orange)"></div></div>
+    <div class="score-item"><span class="score-name">HY Spreads</span><div class="score-indicator" style="background:var(--orange)"></div></div>
+    <div class="score-item"><span class="score-name">CAPE</span><div class="score-indicator" style="background:var(--red)"></div></div>
+    <div class="score-item"><span class="score-name">Sahm</span><div class="score-indicator" style="background:var(--green)"></div></div>
+    <div class="score-item"><span class="score-name">Claims</span><div class="score-indicator" style="background:var(--green)"></div></div>
+    <div class="score-item"><span class="score-name">M2</span><div class="score-indicator" style="background:var(--green)"></div></div>
+    <div class="score-item"><span class="score-name">FM Cash</span><div class="score-indicator" style="background:var(--orange)"></div></div>
+    <div class="score-item"><span class="score-name">ERP</span><div class="score-indicator" style="background:var(--red)"></div></div>
+  </div>
+  <div class="score-overall">⚠ Late Cycle <span>— Defensive Posture Warranted</span></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     JAVASCRIPT: Sparklines + FRED iframe toggle
+     ════════════════════════════════════════════════════ -->
+<script>
+// ── SPARKLINE ENGINE ──────────────────────────────────────────────
+// Each dataset: normalised values (0–1 scale within the series range)
+// representing approximate historical trajectory over ~24 months.
+// These are illustrative patterns matching real-world movements.
+
+const sparkData = {
+  // Yield curve: was deeply negative (inverted), now recovering
+  'spark-yc':    [-0.05,-0.10,-0.20,-0.35,-0.50,-0.65,-0.75,-0.80,-0.78,-0.70,-0.60,-0.45,-0.30,-0.20,-0.10,0.00,0.05,0.12,0.18,0.22,0.25,0.28,0.30,0.30],
+  // HY spreads: rose in stress, now compressing
+  'spark-hy':    [0.30,0.35,0.45,0.55,0.65,0.72,0.80,0.85,0.90,0.88,0.82,0.75,0.65,0.55,0.48,0.42,0.38,0.35,0.33,0.32,0.31,0.30,0.30,0.30],
+  // M2: fell sharply, now recovering
+  'spark-m2':    [0.80,0.75,0.65,0.50,0.35,0.20,0.10,0.05,0.02,0.00,0.05,0.10,0.15,0.22,0.30,0.38,0.45,0.52,0.58,0.62,0.65,0.67,0.68,0.70],
+  // Real Fed Funds: rose sharply, plateauing
+  'spark-rfr':   [0.00,0.05,0.10,0.20,0.35,0.50,0.62,0.72,0.80,0.85,0.88,0.90,0.90,0.88,0.85,0.83,0.82,0.80,0.79,0.78,0.77,0.76,0.75,0.74],
+  // 5y5y inflation: rose, settled above 2%
+  'spark-5y5y':  [0.45,0.48,0.52,0.60,0.68,0.75,0.80,0.82,0.80,0.78,0.74,0.70,0.65,0.62,0.60,0.58,0.57,0.56,0.56,0.57,0.58,0.59,0.60,0.60],
+  // CPI: peaked, declining
+  'spark-cpi':   [0.40,0.50,0.65,0.78,0.88,0.95,1.00,0.98,0.92,0.85,0.76,0.68,0.60,0.52,0.46,0.42,0.40,0.38,0.37,0.36,0.36,0.36,0.37,0.37],
+  // CAPE: generally elevated, slight dip then recovery
+  'spark-cape':  [0.60,0.62,0.65,0.68,0.72,0.76,0.80,0.72,0.65,0.68,0.72,0.76,0.80,0.82,0.84,0.86,0.88,0.90,0.88,0.86,0.87,0.88,0.89,0.90],
+  // PPI-CPI spread: was wide, now narrowing
+  'spark-ppi':   [0.30,0.40,0.55,0.70,0.82,0.90,0.95,1.00,0.95,0.88,0.78,0.65,0.52,0.40,0.32,0.26,0.22,0.18,0.15,0.13,0.12,0.12,0.12,0.12],
+  // Initial claims: low, slight uptick recently
+  'spark-claims':[0.55,0.50,0.45,0.42,0.40,0.38,0.36,0.35,0.34,0.33,0.32,0.32,0.33,0.34,0.35,0.36,0.37,0.38,0.38,0.38,0.38,0.37,0.37,0.37],
+  // Sahm rule: near zero, small uptick then back down
+  'spark-sahm':  [0.05,0.05,0.05,0.08,0.10,0.15,0.20,0.25,0.30,0.28,0.24,0.20,0.18,0.16,0.15,0.15,0.16,0.17,0.18,0.18,0.18,0.18,0.17,0.16],
+  // JOLTS quits: peaked, now declining
+  'spark-jolts': [0.55,0.60,0.68,0.75,0.82,0.88,0.95,1.00,0.98,0.92,0.85,0.76,0.68,0.60,0.52,0.46,0.42,0.40,0.38,0.37,0.36,0.35,0.34,0.34],
+  // DXY: strong, slightly declining from peak
+  'spark-dxy':   [0.45,0.48,0.55,0.62,0.70,0.78,0.85,0.92,1.00,0.98,0.95,0.90,0.86,0.83,0.81,0.80,0.80,0.80,0.79,0.78,0.77,0.76,0.76,0.75],
+  // ERP: declining, near zero
+  'spark-erp':   [0.75,0.72,0.65,0.58,0.50,0.42,0.36,0.30,0.25,0.22,0.20,0.18,0.16,0.15,0.14,0.13,0.12,0.12,0.11,0.11,0.10,0.10,0.10,0.10],
+  // AAII bull-bear spread: oscillating
+  'spark-aaii':  [0.60,0.55,0.50,0.45,0.40,0.35,0.30,0.28,0.32,0.38,0.45,0.52,0.58,0.62,0.65,0.60,0.55,0.50,0.52,0.54,0.55,0.55,0.54,0.54],
+  // FM cash: low and declining
+  'spark-fm':    [0.75,0.72,0.68,0.62,0.56,0.50,0.44,0.40,0.38,0.36,0.34,0.33,0.32,0.31,0.30,0.30,0.30,0.30,0.30,0.30,0.30,0.30,0.30,0.30],
+  // Put/Call: volatile, settling neutral
+  'spark-pcr':   [0.45,0.50,0.60,0.72,0.80,0.85,0.78,0.65,0.55,0.48,0.52,0.58,0.65,0.60,0.55,0.50,0.48,0.50,0.52,0.54,0.55,0.54,0.53,0.52],
+};
+
+// Colour per series — matches the current value badge colour
+const sparkColors = {
+  'spark-yc':    '#5b8dee',
+  'spark-hy':    '#e07d3c',
+  'spark-m2':    '#4caf82',
+  'spark-rfr':   '#e07d3c',
+  'spark-5y5y':  '#e07d3c',
+  'spark-cpi':   '#4caf82',
+  'spark-cape':  '#e05252',
+  'spark-ppi':   '#4caf82',
+  'spark-claims':'#4caf82',
+  'spark-sahm':  '#4caf82',
+  'spark-jolts': '#e07d3c',
+  'spark-dxy':   '#e07d3c',
+  'spark-erp':   '#e05252',
+  'spark-aaii':  '#5b8dee',
+  'spark-fm':    '#e07d3c',
+  'spark-pcr':   '#5b8dee',
+};
+
+function drawSparkline(id, data, color) {
+  const svg = document.getElementById(id);
+  if (!svg) return;
+
+  const W = 200, H = 36, pad = 2;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const n = data.length;
+
+  const xs = data.map((_, i) => pad + (i / (n-1)) * (W - pad*2));
+  const ys = data.map(v => H - pad - ((v - min) / range) * (H - pad*2));
+
+  // Build smooth path using cubic bezier
+  let d = `M ${xs[0]},${ys[0]}`;
+  for (let i = 1; i < n; i++) {
+    const cx1 = xs[i-1] + (xs[i] - xs[i-1]) * 0.5;
+    const cx2 = xs[i]   - (xs[i] - xs[i-1]) * 0.5;
+    d += ` C ${cx1},${ys[i-1]} ${cx2},${ys[i]} ${xs[i]},${ys[i]}`;
+  }
+
+  // Fill area under the line
+  const fillD = d + ` L ${xs[n-1]},${H} L ${xs[0]},${H} Z`;
+  const fillId = id + '_grad';
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="${fillId}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="${color}" stop-opacity="0.25"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0.02"/>
+      </linearGradient>
+    </defs>
+    <path d="${fillD}" fill="url(#${fillId})" />
+    <path d="${d}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${xs[n-1]}" cy="${ys[n-1]}" r="2.5" fill="${color}" />
+  `;
+}
+
+// Draw all sparklines on load
+document.addEventListener('DOMContentLoaded', () => {
+  Object.entries(sparkData).forEach(([id, data]) => {
+    drawSparkline(id, data, sparkColors[id] || '#5b8dee');
+  });
+});
+
+// ── FRED IFRAME TOGGLE ───────────────────────────────────────────
+function toggleFred(btn, src) {
+  const embed = btn.nextElementSibling;
+  const iframe = embed.querySelector('iframe');
+  const isVisible = embed.classList.contains('visible');
+
+  if (isVisible) {
+    embed.classList.remove('visible');
+    btn.classList.remove('active');
+    btn.textContent = '📊 Live FRED Chart';
+  } else {
+    // Lazy-load the iframe src on first open
+    if (!iframe.src || iframe.src === window.location.href) {
+      iframe.src = src;
+    }
+    embed.classList.add('visible');
+    btn.classList.add('active');
+    btn.textContent = '✕ Close Chart';
+  }
+}
+</script>
+
+</body>
+</html>
