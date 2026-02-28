@@ -480,7 +480,39 @@
   @media(max-width:600px){
     .alloc-grid{grid-template-columns:1fr;}
   }
+
+  /* ── INLINE CHART PANEL ── */
+  .chart-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 3px; cursor: pointer;
+    border: 1px solid var(--border-bright);
+    background: transparent; color: var(--text-dim);
+    transition: all 0.2s; flex-shrink: 0;
+  }
+  .chart-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .chart-btn.open  { border-color: var(--blue); color: var(--blue); background: rgba(91,141,238,0.08); }
+  .chart-panel {
+    display: none; margin-top: 12px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; padding: 12px; position: relative;
+  }
+  .chart-panel.visible { display: block; }
+  .chart-panel canvas { max-height: 200px; }
+  .chart-loading {
+    text-align: center; padding: 40px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--text-muted); letter-spacing: 1px;
+  }
+  .chart-series-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; letter-spacing: 1px; color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -582,13 +614,9 @@
 <div class="main">
 
 <div class="disclaimer">
-  <strong>Educational use only.</strong> This dashboard is for learning and orientation purposes, not financial advice. Sparkline data reflects historical patterns for illustration. Each KPI links directly to its live FRED series. Always verify current readings before making investment decisions.
+  <strong>Educational use only.</strong> This dashboard is for learning and orientation purposes, not financial advice. Sparklines and current values are fetched live from the FRED API on every page load. The GitHub Action on the 25th of each month also patches the HTML so the static fallback values stay current. Always verify before making investment decisions.
 </div>
 
-<div style="margin:0 0 24px;padding:14px 20px;background:rgba(91,141,238,0.06);border:1px solid rgba(91,141,238,0.18);border-radius:6px;font-size:12px;color:var(--text-dim);line-height:1.7;">
-  <strong style="color:var(--blue);">ℹ Live data:</strong>
-  This page does <strong style="color:var(--text);">not</strong> automatically fetch or update data — all readings are manually entered as of <strong style="color:var(--text);">February 2026</strong>. To make it truly live you would need a backend that calls the <a href="https://fred.stlouisfed.org/docs/api/fred/" target="_blank" style="color:var(--blue);">FRED API</a> (free key at fred.stlouisfed.org) and rewrites the sparkline data and current-value numbers each month. The FRED direct links on each card always show the latest official data instantly.
-</div>
 <!-- ═══════════════════════════════════════════════
      KPI QUADRANTS
      ═══════════════════════════════════════════════ -->
@@ -630,7 +658,10 @@
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/T10Y2Y" target="_blank">FRED: T10Y2Y</a></span>
             <div class="kpi-signal"><span class="signal-dot orange"></span><span>Re-steepening after inversion — late cycle warning</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-yc" onclick="toggleChart('spark-yc','T10Y2Y')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-yc"><div class="chart-series-label">FRED: T10Y2Y · Live from FRED API</div><div class="chart-loading" id="loading-spark-yc">Fetching data…</div><canvas id="canvas-spark-yc" style="display:none"></canvas></div>
+        </div>
         </div>
 
         <!-- KPI 2: HY Spreads -->
@@ -650,7 +681,10 @@
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" target="_blank">FRED: BAMLH0A0HYM2</a></span>
             <div class="kpi-signal"><span class="signal-dot orange"></span><span>Watch for spike above 500bps as recession signal</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-hy" onclick="toggleChart('spark-hy','BAMLH0A0HYM2')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-hy"><div class="chart-series-label">FRED: BAMLH0A0HYM2 · Live from FRED API</div><div class="chart-loading" id="loading-spark-hy">Fetching data…</div><canvas id="canvas-spark-hy" style="display:none"></canvas></div>
+        </div>
         </div>
 
         <!-- KPI 3: M2 -->
@@ -670,7 +704,10 @@
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/M2SL" target="_blank">FRED: M2SL</a></span>
             <div class="kpi-signal"><span class="signal-dot green"></span><span>Back positive YoY — deflationary shock receding</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-m2" onclick="toggleChart('spark-m2','M2SL')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-m2"><div class="chart-series-label">FRED: M2SL · Live from FRED API</div><div class="chart-loading" id="loading-spark-m2">Fetching data…</div><canvas id="canvas-spark-m2" style="display:none"></canvas></div>
+        </div>
         </div>
 
         <!-- KPI 4: Real Fed Funds Rate -->
@@ -690,7 +727,10 @@
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/FEDFUNDS" target="_blank">FRED: FEDFUNDS</a> minus PCE</span>
             <div class="kpi-signal"><span class="signal-dot orange"></span><span>~2%+ real rate — historically contractionary</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-rfr" onclick="toggleChart('spark-rfr','FEDFUNDS')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-rfr"><div class="chart-series-label">FRED: FEDFUNDS · Live from FRED API</div><div class="chart-loading" id="loading-spark-rfr">Fetching data…</div><canvas id="canvas-spark-rfr" style="display:none"></canvas></div>
+        </div>
         </div>
 
       </div>
@@ -726,7 +766,10 @@
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/T5YIFR" target="_blank">FRED: T5YIFR</a></span>
             <div class="kpi-signal"><span class="signal-dot orange"></span><span>~2.4% — marginally elevated vs 2% target</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-5y5y" onclick="toggleChart('spark-5y5y','T5YIFR')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-5y5y"><div class="chart-series-label">FRED: T5YIFR · Live from FRED API</div><div class="chart-loading" id="loading-spark-5y5y">Fetching data…</div><canvas id="canvas-spark-5y5y" style="display:none"></canvas></div>
+        </div>
         </div>
 
         <!-- KPI 6: CPI -->
@@ -746,7 +789,10 @@
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/CPIAUCSL" target="_blank">FRED: CPIAUCSL</a></span>
             <div class="kpi-signal"><span class="signal-dot green"></span><span>Trending down but sticky — last mile problem</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-cpi" onclick="toggleChart('spark-cpi','CPIAUCSL')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-cpi"><div class="chart-series-label">FRED: CPIAUCSL · Live from FRED API</div><div class="chart-loading" id="loading-spark-cpi">Fetching data…</div><canvas id="canvas-spark-cpi" style="display:none"></canvas></div>
+        </div>
         </div>
 
         <!-- KPI 7: CAPE -->
@@ -764,9 +810,12 @@
           <div class="kpi-explain">Stock market price divided by 10 years of inflation-adjusted earnings. Long-run average is ~16×. Above 30× = expensive. Above 35× implies historically poor returns for the next decade. Not a timing tool — a return expectation tool.</div>
           <div class="kpi-analogy">🎓 If you buy a shop for €350,000 that earns €10,000/year, you'd wait 35 years to get your money back. CAPE above 35 says investors are paying 35 years of earnings upfront. That's risky.</div>
           <div class="kpi-footer">
-            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/CAPE" target="_blank">FRED: CAPE</a> · <a href="http://www.econ.yale.edu/~shiller/data.htm" target="_blank">Shiller Data</a></span>
+            <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/CAPE" target="_blank">FRED: CAPE</a> (Shiller monthly, ~1 month lag) · <a href="http://www.econ.yale.edu/~shiller/data.htm" target="_blank">Yale source data</a></span>
             <div class="kpi-signal"><span class="signal-dot red"></span><span>Top decile. Poor 10yr forward returns implied.</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-cape" onclick="toggleChart('spark-cape','CAPE')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-cape"><div class="chart-series-label">FRED: CAPE · Live from FRED API</div><div class="chart-loading" id="loading-spark-cape">Fetching data…</div><canvas id="canvas-spark-cape" style="display:none"></canvas></div>
+        </div>
         </div>
 
         <!-- KPI 8: PPI -->
@@ -786,7 +835,10 @@
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/PPIACO" target="_blank">FRED: PPIACO</a></span>
             <div class="kpi-signal"><span class="signal-dot green"></span><span>Spread narrowing — margin pressure easing</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-ppi" onclick="toggleChart('spark-ppi','PPIACO')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-ppi"><div class="chart-series-label">FRED: PPIACO · Live from FRED API</div><div class="chart-loading" id="loading-spark-ppi">Fetching data…</div><canvas id="canvas-spark-ppi" style="display:none"></canvas></div>
+        </div>
         </div>
 
       </div>
@@ -822,7 +874,10 @@
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/ICSA" target="_blank">FRED: ICSA</a> (every Thursday)</span>
             <div class="kpi-signal"><span class="signal-dot green"></span><span>~218k/week — still healthy but watch the trend</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-claims" onclick="toggleChart('spark-claims','ICSA')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-claims"><div class="chart-series-label">FRED: ICSA · Live from FRED API</div><div class="chart-loading" id="loading-spark-claims">Fetching data…</div><canvas id="canvas-spark-claims" style="display:none"></canvas></div>
+        </div>
         </div>
 
         <!-- KPI 10: Sahm Rule -->
@@ -842,7 +897,10 @@
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/SAHMREALTIME" target="_blank">FRED: SAHMREALTIME</a></span>
             <div class="kpi-signal"><span class="signal-dot green"></span><span>Any reading ≥ 0.50 = recession signal. Act.</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-sahm" onclick="toggleChart('spark-sahm','SAHMREALTIME')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-sahm"><div class="chart-series-label">FRED: SAHMREALTIME · Live from FRED API</div><div class="chart-loading" id="loading-spark-sahm">Fetching data…</div><canvas id="canvas-spark-sahm" style="display:none"></canvas></div>
+        </div>
         </div>
 
         <!-- KPI 11: JOLTS Quits -->
@@ -862,7 +920,10 @@
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/JTSQUR" target="_blank">FRED: JTSQUR</a> (monthly, JOLTS)</span>
             <div class="kpi-signal"><span class="signal-dot orange"></span><span>Declining from peak — labor confidence softening</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-jolts" onclick="toggleChart('spark-jolts','JTSQUR')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-jolts"><div class="chart-series-label">FRED: JTSQUR · Live from FRED API</div><div class="chart-loading" id="loading-spark-jolts">Fetching data…</div><canvas id="canvas-spark-jolts" style="display:none"></canvas></div>
+        </div>
         </div>
 
         <!-- KPI 12: DXY -->
@@ -882,7 +943,10 @@
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/DTWEXBGS" target="_blank">FRED: DTWEXBGS</a></span>
             <div class="kpi-signal"><span class="signal-dot orange"></span><span>Elevated — peak = signal to add EM & commodities</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-dxy" onclick="toggleChart('spark-dxy','DTWEXBGS')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-dxy"><div class="chart-series-label">FRED: DTWEXBGS · Live from FRED API</div><div class="chart-loading" id="loading-spark-dxy">Fetching data…</div><canvas id="canvas-spark-dxy" style="display:none"></canvas></div>
+        </div>
         </div>
 
       </div>
@@ -918,7 +982,10 @@
           <div class="kpi-footer">
             <span class="kpi-source">📊 Calculate: (1/CAPE) − <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank">DGS10</a></span>
             <div class="kpi-signal"><span class="signal-dot red"></span><span>Near zero — stocks expensive relative to bonds</span></div>
-          </div>
+          
+          <div style="margin-top:8px"><button class="chart-btn" id="btn-spark-erp" onclick="toggleChart('spark-erp','DGS10')" title="Show live FRED chart">📈 Chart</button></div>
+          <div class="chart-panel" id="panel-spark-erp"><div class="chart-series-label">FRED: DGS10 · Live from FRED API</div><div class="chart-loading" id="loading-spark-erp">Fetching data…</div><canvas id="canvas-spark-erp" style="display:none"></canvas></div>
+        </div>
         </div>
 
         <!-- KPI 14: AAII -->
@@ -1298,6 +1365,7 @@ const FRED_SERIES = {
     unit: '×',
     decimals: 1,
     transform: v => parseFloat(v),
+    limit: 60,  // 5 years monthly for better sparkline
   },
   'spark-ppi': {
     series: 'PPIACO',
@@ -1443,7 +1511,7 @@ function updateCurrentLabel(sparkId, value, unit, decimals, color) {
 
 // ── FETCH ONE FRED SERIES ─────────────────────────────────────────
 async function fetchFredSeries(seriesId, limit = 36) {
-  const url = `${FRED_BASE}?series_id=${seriesId}&api_key=${FRED_KEY}&limit=${limit}&sort_order=desc&file_type=json`;
+  const url = `${FRED_BASE}?series_id=${seriesId}&api_key=${FRED_KEY}&limit=${limit}&sort_order=desc&file_type=json&frequency=m`;
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   const json = await resp.json();
@@ -1460,7 +1528,7 @@ async function loadLiveData() {
 
   await Promise.allSettled(entries.map(async ([sparkId, cfg]) => {
     try {
-      const raw = await fetchFredSeries(cfg.series);
+      const raw = await fetchFredSeries(cfg.series, cfg.limit || 36);
       const data = raw.map(cfg.transform);
       drawSparkline(sparkId, data, cfg.color);
       const latest = data[data.length - 1];
@@ -1474,14 +1542,148 @@ async function loadLiveData() {
 
 // ── ON LOAD: draw static fallbacks first, then overlay live data ──
 document.addEventListener('DOMContentLoaded', () => {
-  // Draw static immediately so page never looks broken
   Object.entries(staticFallback).forEach(([id, data]) => {
     drawSparkline(id, data, sparkColors[id] || '#5b8dee');
   });
-
-  // Then fetch live FRED data and redraw
   loadLiveData();
 });
+</script>
+
+<script>
+
+// ── INLINE FRED CHART ENGINE ──────────────────────────────────────
+// Stores fetched FRED data keyed by sparkId for reuse in charts
+window.fredData = {};     // sparkId → { dates: [], values: [] }
+window.chartInstances = {}; // sparkId → Chart instance
+
+async function fetchFredForChart(seriesId, sparkId, limit) {
+  // Reuse already-fetched data if available
+  if (window.fredData[sparkId]) return window.fredData[sparkId];
+  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${FRED_KEY}&limit=${limit || 60}&sort_order=asc&file_type=json&frequency=m`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('FRED API ' + resp.status);
+  const json = await resp.json();
+  const obs = json.observations.filter(o => o.value !== '.');
+  const cfg = FRED_SERIES[sparkId];
+  window.fredData[sparkId] = {
+    dates:  obs.map(o => o.date.slice(0, 7)),        // YYYY-MM
+    values: obs.map(o => cfg ? cfg.transform(parseFloat(o.value)) : parseFloat(o.value)),
+  };
+  return window.fredData[sparkId];
+}
+
+function drawFredChart(sparkId, seriesId, color) {
+  const canvas = document.getElementById('canvas-' + sparkId);
+  const loading = document.getElementById('loading-' + sparkId);
+  if (!canvas) return;
+
+  const cfg = FRED_SERIES[sparkId];
+  const data = window.fredData[sparkId];
+  if (!data) return;
+
+  loading.style.display = 'none';
+  canvas.style.display = 'block';
+
+  // Destroy previous chart if exists
+  if (window.chartInstances[sparkId]) {
+    window.chartInstances[sparkId].destroy();
+  }
+
+  window.chartInstances[sparkId] = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: data.dates,
+      datasets: [{
+        data: data.values,
+        borderColor: color,
+        backgroundColor: color + '18',
+        borderWidth: 1.5,
+        fill: true,
+        tension: 0.35,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: color,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#141c28',
+          borderColor: 'rgba(255,255,255,0.12)',
+          borderWidth: 1,
+          titleColor: '#8a8680',
+          bodyColor: color,
+          titleFont: { family: 'IBM Plex Mono', size: 10 },
+          bodyFont:  { family: 'IBM Plex Mono', size: 12, weight: '500' },
+          padding: 10,
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.y;
+              if (cfg) return v.toFixed(cfg.decimals) + (cfg.unit || '');
+              return v.toFixed(2);
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: '#5a5650',
+            font: { family: 'IBM Plex Mono', size: 9 },
+            maxTicksLimit: 8,
+            maxRotation: 0,
+          },
+          grid: { color: 'rgba(255,255,255,0.04)' },
+        },
+        y: {
+          ticks: {
+            color: '#5a5650',
+            font: { family: 'IBM Plex Mono', size: 9 },
+            maxTicksLimit: 5,
+            callback: v => {
+              if (cfg) return v.toFixed(cfg.decimals) + (cfg.unit || '');
+              return v;
+            }
+          },
+          grid: { color: 'rgba(255,255,255,0.04)' },
+        }
+      }
+    }
+  });
+}
+
+async function toggleChart(sparkId, seriesId) {
+  const panel = document.getElementById('panel-' + sparkId);
+  const btn   = document.getElementById('btn-' + sparkId);
+  const cfg   = FRED_SERIES[sparkId];
+  const color = cfg ? cfg.color : '#5b8dee';
+
+  const isOpen = panel.classList.contains('visible');
+
+  if (isOpen) {
+    panel.classList.remove('visible');
+    btn.classList.remove('open');
+    btn.textContent = '📈 Chart';
+    return;
+  }
+
+  panel.classList.add('visible');
+  btn.classList.add('open');
+  btn.textContent = '✕ Close';
+
+  try {
+    await fetchFredForChart(seriesId, sparkId, cfg && cfg.limit ? cfg.limit : 60);
+    drawFredChart(sparkId, seriesId, color);
+  } catch (err) {
+    document.getElementById('loading-' + sparkId).textContent = 'Could not load — check connection.';
+    console.warn('Chart fetch failed:', err);
+  }
+}
+
 </script>
 
 <!-- ════════════════════════════════════════════════════
