@@ -1509,14 +1509,51 @@ function updateCurrentLabel(sparkId, value, unit, decimals, color) {
   }
 }
 
-// ── FETCH ONE FRED SERIES ─────────────────────────────────────────
+// ── JSONP FETCH HELPER (works on file://, GitHub Pages, everywhere) ──
+// FRED supports a &callback= param that returns JS: callbackFn({...json...})
+// We inject a <script> tag and resolve a Promise when it fires.
+let _jsonpCounter = 0;
+function fredJsonp(seriesId, limit, sortOrder, frequency) {
+  return new Promise((resolve, reject) => {
+    const cbName = `_fredCb${_jsonpCounter++}`;
+    const params = [
+      `series_id=${seriesId}`,
+      `api_key=${FRED_KEY}`,
+      `limit=${limit || 60}`,
+      `sort_order=${sortOrder || 'asc'}`,
+      `file_type=json`,
+      frequency ? `frequency=${frequency}` : '',
+      `callback=${cbName}`,
+    ].filter(Boolean).join('&');
+
+    const script = document.createElement('script');
+    script.src = `https://api.stlouisfed.org/fred/series/observations?${params}`;
+
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('FRED JSONP timeout'));
+    }, 12000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[cbName] = (data) => {
+      cleanup();
+      resolve(data);
+    };
+
+    script.onerror = () => { cleanup(); reject(new Error('Script load failed')); };
+    document.head.appendChild(script);
+  });
+}
+
+// ── FETCH ONE FRED SERIES (sparkline values only) ─────────────────
 async function fetchFredSeries(seriesId, limit = 36) {
-  const url = `${FRED_BASE}?series_id=${seriesId}&api_key=${FRED_KEY}&limit=${limit}&sort_order=desc&file_type=json&frequency=m`;
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  const json = await resp.json();
-  // Reverse so oldest→newest, filter out missing values (.)
-  return json.observations
+  const data = await fredJsonp(seriesId, limit, 'desc', 'm');
+  return data.observations
     .reverse()
     .filter(o => o.value !== '.')
     .map(o => parseFloat(o.value));
@@ -1528,13 +1565,21 @@ async function loadLiveData() {
 
   await Promise.allSettled(entries.map(async ([sparkId, cfg]) => {
     try {
-      const raw = await fetchFredSeries(cfg.series, cfg.limit || 36);
-      const data = raw.map(cfg.transform);
+      // Fetch with dates so chart can reuse without a second API call
+      const json = await fredJsonp(cfg.series, cfg.limit || 60, 'asc', 'm');
+      const obs  = json.observations.filter(o => o.value !== '.');
+      const data = obs.map(o => cfg.transform(parseFloat(o.value)));
+
+      // Cache for chart reuse
+      window.fredData[sparkId] = {
+        dates:  obs.map(o => o.date.slice(0, 7)),
+        values: data,
+      };
+
       drawSparkline(sparkId, data, cfg.color);
       const latest = data[data.length - 1];
       updateCurrentLabel(sparkId, latest, cfg.unit, cfg.decimals, cfg.color);
     } catch (err) {
-      // Silently fall back to static data — already drawn
       console.warn(`FRED fetch failed for ${cfg.series}:`, err.message);
     }
   }));
@@ -1557,16 +1602,13 @@ window.fredData = {};     // sparkId → { dates: [], values: [] }
 window.chartInstances = {}; // sparkId → Chart instance
 
 async function fetchFredForChart(seriesId, sparkId, limit) {
-  // Reuse already-fetched data if available
+  // Reuse data already fetched for sparklines if available
   if (window.fredData[sparkId]) return window.fredData[sparkId];
-  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${FRED_KEY}&limit=${limit || 60}&sort_order=asc&file_type=json&frequency=m`;
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error('FRED API ' + resp.status);
-  const json = await resp.json();
+  const json = await fredJsonp(seriesId, limit || 60, 'asc', 'm');
   const obs = json.observations.filter(o => o.value !== '.');
   const cfg = FRED_SERIES[sparkId];
   window.fredData[sparkId] = {
-    dates:  obs.map(o => o.date.slice(0, 7)),        // YYYY-MM
+    dates:  obs.map(o => o.date.slice(0, 7)),
     values: obs.map(o => cfg ? cfg.transform(parseFloat(o.value)) : parseFloat(o.value)),
   };
   return window.fredData[sparkId];
