@@ -54,8 +54,8 @@
   nav {
     position: sticky;
     top: 0;
-    background: rgba(10,12,16,0.96);
-    backdrop-filter: blur(14px);
+    background: rgba(10,12,16,0.97);
+    backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border);
     padding: 0 40px;
     z-index: 500;
@@ -64,22 +64,23 @@
     overflow-x: auto;
   }
   .nav-link {
-    padding: 14px 20px;
+    padding: 18px 24px;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 2px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2.5px;
     text-transform: uppercase;
-    color: var(--text-muted);
+    color: var(--text-dim);
     text-decoration: none;
     white-space: nowrap;
-    transition: color 0.2s;
+    transition: color 0.2s, border-color 0.2s;
     border-bottom: 2px solid transparent;
   }
-  .nav-link:hover { color: var(--gold); border-bottom-color: rgba(201,168,76,0.3); }
+  .nav-link:hover { color: var(--gold); border-bottom-color: rgba(201,168,76,0.4); }
 
   /* ── HEADER ── */
   header {
-    padding: 60px 40px 40px;
+    padding: 72px 40px 52px;
     border-bottom: 1px solid var(--border);
     position: relative;
     overflow: hidden;
@@ -87,97 +88,97 @@
   header::after {
     content: '';
     position: absolute;
-    top: -100px; right: -100px;
-    width: 500px; height: 500px;
-    background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+    top: -80px; right: -80px;
+    width: 640px; height: 640px;
+    background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 65%);
     pointer-events: none;
   }
   .header-eyebrow {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px; letter-spacing: 3px;
+    font-size: 12px; letter-spacing: 4px;
     color: var(--gold); text-transform: uppercase;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     opacity: 0; animation: fadeUp 0.6s 0.1s forwards;
   }
   h1 {
     font-family: 'Playfair Display', serif;
-    font-size: clamp(32px, 5vw, 64px);
-    font-weight: 900; line-height: 1.1;
+    font-size: clamp(38px, 5.5vw, 72px);
+    font-weight: 900; line-height: 1.08;
     opacity: 0; animation: fadeUp 0.7s 0.2s forwards;
   }
   h1 em { font-style: italic; color: var(--gold); }
   .header-sub {
-    margin-top: 16px; color: var(--text-dim);
-    font-size: 15px; max-width: 680px;
+    margin-top: 20px; color: var(--text-dim);
+    font-size: 16px; line-height: 1.7; max-width: 720px;
     opacity: 0; animation: fadeUp 0.7s 0.3s forwards;
   }
   .header-meta {
-    margin-top: 24px; display: flex; gap: 32px; flex-wrap: wrap;
+    margin-top: 28px; display: flex; gap: 32px; flex-wrap: wrap;
     opacity: 0; animation: fadeUp 0.7s 0.4s forwards;
   }
   .meta-chip {
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 9px;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px; color: var(--text-muted); letter-spacing: 1px;
+    font-size: 12px; color: var(--text-dim); letter-spacing: 1px;
   }
   .meta-chip .dot {
-    width: 6px; height: 6px; border-radius: 50%;
+    width: 7px; height: 7px; border-radius: 50%;
     background: var(--gold); animation: pulse 2s infinite;
   }
   .live-badge {
-    display: inline-flex; align-items: center; gap: 5px;
+    display: inline-flex; align-items: center; gap: 6px;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
-    color: var(--green); background: rgba(76,175,130,0.1);
-    border: 1px solid rgba(76,175,130,0.2);
-    padding: 3px 8px; border-radius: 3px;
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--green); background: rgba(76,175,130,0.12);
+    border: 1px solid rgba(76,175,130,0.25);
+    padding: 5px 11px; border-radius: 4px;
   }
   .live-badge .blink {
-    width: 5px; height: 5px; border-radius: 50%;
+    width: 6px; height: 6px; border-radius: 50%;
     background: var(--green); animation: blink 1.2s infinite;
   }
 
   /* ── CYCLE BANNER ── */
   .cycle-banner {
-    padding: 20px 40px;
+    padding: 24px 40px;
     background: var(--bg2); border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
     opacity: 0; animation: fadeUp 0.7s 0.5s forwards;
   }
   .cycle-label {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px; letter-spacing: 2px;
-    color: var(--text-muted); text-transform: uppercase;
+    font-size: 11px; font-weight: 500; letter-spacing: 2.5px;
+    color: var(--text-dim); text-transform: uppercase;
   }
-  .cycle-phases { display: flex; gap: 4px; flex: 1; max-width: 600px; }
+  .cycle-phases { display: flex; gap: 6px; flex: 1; max-width: 680px; }
   .phase {
-    flex: 1; padding: 8px 12px; border-radius: 4px;
+    flex: 1; padding: 11px 14px; border-radius: 6px;
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
     text-align: center; border: 1px solid transparent;
   }
   .phase.early { background: rgba(76,175,130,0.1); border-color: rgba(76,175,130,0.3); color: var(--early); }
   .phase.mid   { background: rgba(91,141,238,0.1); border-color: rgba(91,141,238,0.3); color: var(--blue); }
-  .phase.late  { background: rgba(224,125,60,0.15); border-color: rgba(224,125,60,0.4); color: var(--orange); font-weight: 500; box-shadow: 0 0 12px rgba(224,125,60,0.2); }
+  .phase.late  { background: rgba(224,125,60,0.16); border-color: rgba(224,125,60,0.45); color: var(--orange); font-weight: 600; box-shadow: 0 0 16px rgba(224,125,60,0.22); }
   .phase.recession { background: rgba(224,82,82,0.1); border-color: rgba(224,82,82,0.2); color: var(--recession); }
   .phase-arrow { display: flex; align-items: center; color: var(--text-muted); font-size: 12px; }
   .current-tag {
-    font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px;
-    padding: 4px 10px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 2px;
+    padding: 7px 14px;
     background: rgba(224,125,60,0.15); border: 1px solid rgba(224,125,60,0.3);
-    color: var(--orange); border-radius: 3px; text-transform: uppercase;
+    color: var(--orange); border-radius: 4px; text-transform: uppercase;
   }
 
   /* ── PROBABILITY PHASES ── */
   .prob-phase {
     position: relative;
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    cursor: default; padding: 8px 14px 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: default; padding: 10px 16px;
   }
-  .phase-name { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .phase-name { font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; }
   .phase-prob {
     font-family: 'IBM Plex Mono', monospace;
-    font-size: 18px; font-weight: 500; line-height: 1; letter-spacing: 0;
+    font-size: 22px; font-weight: 600; line-height: 1; letter-spacing: 0;
   }
   .phase.early     .phase-prob { color: var(--early); }
   .phase.mid       .phase-prob { color: var(--blue); }
@@ -365,10 +366,25 @@
   }
   .fred-embed.visible { display: block; }
   .fred-embed iframe {
-    width: 100%; height: 280px;
+    width: 100%; height: 300px;
     border: none; display: block;
-    /* invert dark-on-light FRED charts to blend better */
     filter: invert(0.88) hue-rotate(180deg) saturate(0.7) brightness(0.95);
+  }
+  .fred-open-link {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 10px;
+    background: rgba(91,141,238,0.06);
+    border-top: 1px solid var(--border);
+  }
+  .fred-open-link span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; letter-spacing: 1px; color: var(--text-muted);
+  }
+  .fred-open-link a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; letter-spacing: 1px;
+    color: var(--blue); text-decoration: none;
+    border-bottom: 1px solid rgba(91,141,238,0.3);
   }
   .fred-label {
     position: absolute; bottom: 0; right: 0;
@@ -469,19 +485,34 @@
   /* ── SCORE BAR (sticky bottom) ── */
   .score-bar {
     position: fixed; bottom: 0; left: 0; right: 0;
-    background: rgba(10,12,16,0.97); border-top: 1px solid var(--border);
-    backdrop-filter: blur(12px); padding: 10px 40px;
-    display: flex; align-items: center; gap: 24px; z-index: 400; flex-wrap: wrap;
+    background: rgba(10,12,16,0.98); border-top: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(16px); padding: 12px 40px;
+    display: flex; align-items: center; gap: 20px; z-index: 400; flex-wrap: wrap;
   }
-  .score-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
-  .score-items { display: flex; gap: 8px; flex-wrap: wrap; }
-  .score-item { display: flex; flex-direction: column; gap: 2px; align-items: center; }
-  .score-name { font-family: 'IBM Plex Mono', monospace; font-size: 8px; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; }
-  .score-indicator { width: 28px; height: 8px; border-radius: 2px; }
-  .score-overall { margin-left: auto; font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: var(--orange); display: flex; align-items: center; gap: 8px; }
-  .score-overall span { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-muted); font-weight: 300; font-style: normal; }
+  .score-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--text-dim); white-space: nowrap;
+  }
+  .score-items { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .score-item { display: flex; flex-direction: column; gap: 3px; align-items: center; }
+  .score-name {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+    font-weight: 500; letter-spacing: 1px; color: var(--text-dim);
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .score-indicator { width: 32px; height: 10px; border-radius: 3px; }
+  .score-overall {
+    margin-left: auto; font-family: 'Playfair Display', serif;
+    font-size: 16px; font-weight: 700; color: var(--orange);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .score-overall span {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-dim); font-weight: 400; font-style: normal;
+  }
 
-  body { padding-bottom: 62px; }
+  body { padding-bottom: 70px; }
 
   /* ── FOOTER ── */
   footer { padding: 40px; border-top: 1px solid var(--border); text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); letter-spacing: 1px; }
@@ -644,11 +675,14 @@
           <div class="kpi-explain">The difference between 10-year and 2-year Treasury yields. Normally positive. When inverted (negative), a recession typically follows 12–18 months later. Re-steepening after a long inversion is often when the recession actually arrives.</div>
           <div class="kpi-analogy">🎓 If borrowing for 10 years is cheaper than for 2 years, markets expect rates to fall — which usually means economic trouble is coming.</div>
           <!-- FRED TOGGLE -->
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWmB&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/T10Y2Y')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · Yield Curve: 10Y minus 2Y Treasury</span>
+              <a href="https://fred.stlouisfed.org/series/T10Y2Y" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/T10Y2Y" target="_blank">FRED: T10Y2Y</a></span>
             <div class="kpi-signal"><span class="signal-dot orange"></span><span>Re-steepening after inversion — late cycle warning</span></div>
@@ -669,11 +703,14 @@
           </div>
           <div class="kpi-explain">Extra interest companies pay to borrow vs. the government. Above 500–600 bps signals serious distress. Watch for spikes — they arrive fast and predict equity drawdowns with a short lag.</div>
           <div class="kpi-analogy">🎓 A bank charging a risky friend 8% while charging a reliable friend 2%. The 6% gap is the "spread." When that gap explodes, the whole lending market freezes up.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWmK&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/BAMLH0A0HYM2')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · ICE BofA HY Option-Adjusted Spread</span>
+              <a href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/BAMLH0A0HYM2" target="_blank">FRED: BAMLH0A0HYM2</a></span>
             <div class="kpi-signal"><span class="signal-dot orange"></span><span>Watch for spike above 500bps as recession signal</span></div>
@@ -694,11 +731,14 @@
           </div>
           <div class="kpi-explain">All money in circulation plus savings accounts, year-over-year. When it contracts (as in 2022–23, first time since the Depression), deflationary risk rises dramatically. Back positive now — deflationary shock receding.</div>
           <div class="kpi-analogy">🎓 Think of M2 as the total tokens in a board game. More tokens = prices go up. Fewer tokens = the game slows. In 2022 they actually removed tokens for the first time since the 1930s.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWmS&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/M2SL')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · M2 Money Supply</span>
+              <a href="https://fred.stlouisfed.org/series/M2SL" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/M2SL" target="_blank">FRED: M2SL</a></span>
             <div class="kpi-signal"><span class="signal-dot green"></span><span>Back positive YoY — deflationary shock receding</span></div>
@@ -719,11 +759,14 @@
           </div>
           <div class="kpi-explain">Fed Funds Rate minus PCE inflation. When positive and above nominal GDP growth, the Fed is actively slowing the economy. Historically, rates this restrictive have always eventually caused a recession or financial event.</div>
           <div class="kpi-analogy">🎓 If you borrow at 5% but inflation is 3%, your real cost is 2%. If inflation falls to 1%, your real cost jumps to 4% — much more painful. A high real rate is like putting the economy's car in second gear.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWmZ&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/FEDFUNDS')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · Federal Funds Effective Rate</span>
+              <a href="https://fred.stlouisfed.org/series/FEDFUNDS" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/FEDFUNDS" target="_blank">FRED: FEDFUNDS</a> minus PCE</span>
             <div class="kpi-signal"><span class="signal-dot orange"></span><span>~2%+ real rate — historically contractionary</span></div>
@@ -760,11 +803,14 @@
           </div>
           <div class="kpi-explain">What the market expects inflation to average in years 5–10 from now. Strips out short-term noise. The Fed watches this obsessively. Above 2.5% = inflation expectations getting unanchored = very bad for bonds.</div>
           <div class="kpi-analogy">🎓 Not "what will the weather be tomorrow?" but "what do you expect average summers to feel like in 2035?" It tells you the long-term mood, not just today's weather.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWn5&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/T5YIFR')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · 5-Year 5-Year Forward Inflation Expectation</span>
+              <a href="https://fred.stlouisfed.org/series/T5YIFR" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/T5YIFR" target="_blank">FRED: T5YIFR</a></span>
             <div class="kpi-signal"><span class="signal-dot orange"></span><span>~2.4% — marginally elevated vs 2% target</span></div>
@@ -785,11 +831,14 @@
           </div>
           <div class="kpi-explain">Consumer Price Index — the most widely-cited inflation measure. Tracks the price of a basket of everyday goods. Fed target is 2%. Above 4% = the Fed will tighten hard. Below 2% = risk of deflation.</div>
           <div class="kpi-analogy">🎓 If your grocery bill was €100 last year and is €103 today, that's 3% CPI. The Fed's job is to keep that number near 2% — not too hot, not too cold, like Goldilocks' porridge.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnb&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/CPIAUCSL')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · Consumer Price Index (CPI All Urban)</span>
+              <a href="https://fred.stlouisfed.org/series/CPIAUCSL" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/CPIAUCSL" target="_blank">FRED: CPIAUCSL</a></span>
             <div class="kpi-signal"><span class="signal-dot green"></span><span>Trending down but sticky — last mile problem</span></div>
@@ -810,11 +859,14 @@
           </div>
           <div class="kpi-explain">Stock market price divided by 10 years of inflation-adjusted earnings. Long-run average is ~16×. Above 30× = expensive. Above 35× implies historically poor returns for the next decade. Not a timing tool — a return expectation tool.</div>
           <div class="kpi-analogy">🎓 If you buy a shop for €350,000 that earns €10,000/year, you'd wait 35 years to get your money back. CAPE above 35 says investors are paying 35 years of earnings upfront. That's risky.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWni&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/CAPE')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · Shiller CAPE Ratio</span>
+              <a href="https://fred.stlouisfed.org/series/CAPE" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/CAPE" target="_blank">FRED: CAPE</a> · <a href="https://www.multpl.com/shiller-pe" target="_blank">multpl.com</a></span>
             <div class="kpi-signal"><span class="signal-dot red"></span><span>Top decile. Poor 10yr forward returns implied.</span></div>
@@ -835,11 +887,14 @@
           </div>
           <div class="kpi-explain">PPI = what companies pay for inputs. CPI = what consumers pay in stores. When PPI > CPI, costs rise faster than companies can charge customers — profit margins get squeezed. Bad for equities.</div>
           <div class="kpi-analogy">🎓 A pizza shop pays more for flour and cheese (PPI up) but can't raise pizza prices fast enough (CPI lower). The shop earns less. Multiply that by every company in the economy — that's an earnings recession.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWno&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/PPIACO')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · Producer Price Index: All Commodities</span>
+              <a href="https://fred.stlouisfed.org/series/PPIACO" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/PPIACO" target="_blank">FRED: PPIACO</a></span>
             <div class="kpi-signal"><span class="signal-dot green"></span><span>Spread narrowing — margin pressure easing</span></div>
@@ -876,11 +931,14 @@
           </div>
           <div class="kpi-explain">How many people filed for unemployment benefits last week. Released every Thursday morning. The earliest tremor of labor market weakness — shows up here months before official unemployment rises above thresholds.</div>
           <div class="kpi-analogy">🎓 Think of it as the number of people who just got fired this week. If that number suddenly jumps from 200k to 350k over a few months, something is breaking in the economy — and this is the very first place it shows.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnu&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/ICSA')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · Initial Jobless Claims (Weekly)</span>
+              <a href="https://fred.stlouisfed.org/series/ICSA" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/ICSA" target="_blank">FRED: ICSA</a> (every Thursday)</span>
             <div class="kpi-signal"><span class="signal-dot green"></span><span>~218k/week — still healthy but watch the trend</span></div>
@@ -901,11 +959,14 @@
           </div>
           <div class="kpi-explain">Triggers when the 3-month average unemployment rate rises 0.5 percentage points above its 12-month low. 100% accurate recession predictor since 1970. Zero false signals. When it fires, act immediately.</div>
           <div class="kpi-analogy">🎓 Like a smoke detector tuned to ignore small cooking smoke but instantly alarm at real fire. The Sahm Rule ignores normal unemployment fluctuations but triggers the moment a real systemic deterioration begins.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnz&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/SAHMREALTIME')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · Sahm Rule Recession Indicator</span>
+              <a href="https://fred.stlouisfed.org/series/SAHMREALTIME" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/SAHMREALTIME" target="_blank">FRED: SAHMREALTIME</a></span>
             <div class="kpi-signal"><span class="signal-dot green"></span><span>Any reading ≥ 0.50 = recession signal. Act.</span></div>
@@ -926,11 +987,14 @@
           </div>
           <div class="kpi-explain">Percentage of workers who voluntarily quit. High = workers confident they'll find something better. Declining = workers scared to quit = labor market softening. Leads official unemployment by months.</div>
           <div class="kpi-analogy">🎓 If your friend leaves a decent job because they know they'll find something better tomorrow — the market is hot. If they stay in a job they hate out of fear — the market is cooling. This measures how brave workers feel collectively.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnE&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/JTSQUR')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · JOLTS: Quits Rate (Total)</span>
+              <a href="https://fred.stlouisfed.org/series/JTSQUR" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/JTSQUR" target="_blank">FRED: JTSQUR</a> (monthly, JOLTS)</span>
             <div class="kpi-signal"><span class="signal-dot orange"></span><span>Declining from peak — labor confidence softening</span></div>
@@ -951,11 +1015,14 @@
           </div>
           <div class="kpi-explain">Value of the USD vs. a basket of world currencies. A strong dollar tightens global financial conditions, hurts EM economies with dollar-denominated debt, and compresses US multinational earnings. Dollar peak often coincides with market inflection points.</div>
           <div class="kpi-analogy">🎓 If you borrowed in dollars and the dollar strengthens vs. your local currency, your debt just got bigger in local terms — even though you borrowed the same amount. A strong dollar is a hidden tax on the global economy.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnJ&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/DTWEXBGS')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · US Dollar Broad Index (DXY proxy)</span>
+              <a href="https://fred.stlouisfed.org/series/DTWEXBGS" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://fred.stlouisfed.org/series/DTWEXBGS" target="_blank">FRED: DTWEXBGS</a></span>
             <div class="kpi-signal"><span class="signal-dot orange"></span><span>Elevated — peak = signal to add EM & commodities</span></div>
@@ -992,11 +1059,14 @@
           </div>
           <div class="kpi-explain">Extra return you get for owning stocks vs. risk-free bonds. Formula: (1 ÷ CAPE) − 10yr Treasury yield. Near zero means bonds are almost as attractive as stocks — historically precedes poor equity returns or sharp corrections.</div>
           <div class="kpi-analogy">🎓 If the government pays 5% risk-free, but stocks might only return 4% (with all that volatility and risk), why own stocks? When the bonus for taking risk disappears, smart money moves to bonds — and stocks must fall to restore the premium.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnN&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/DGS10')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · 10-Year Treasury Constant Maturity Rate</span>
+              <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 Calculate: (1/CAPE) − <a href="https://fred.stlouisfed.org/series/DGS10" target="_blank">DGS10</a></span>
             <div class="kpi-signal"><span class="signal-dot red"></span><span>Near zero — stocks expensive relative to bonds</span></div>
@@ -1017,11 +1087,14 @@
           </div>
           <div class="kpi-explain">Weekly survey of individual investors: are you bullish, bearish, or neutral? The spread (bulls minus bears) above +30% = dangerous complacency. Below −20% = fear = contrarian buy signal. The crowd is reliably wrong at extremes.</div>
           <div class="kpi-analogy">🎓 Marks's iron rule: "When everyone is bullish, who's left to buy?" If 70% of investors are optimistic and already invested, there are few people left to drive prices higher. The next surprise tends to go against the consensus.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnS&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/UMCSENT')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · UMich Consumer Sentiment (AAII proxy)</span>
+              <a href="https://fred.stlouisfed.org/series/UMCSENT" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://www.aaii.com/sentimentsurvey" target="_blank">AAII.com</a> (free, weekly)</span>
             <div class="kpi-signal"><span class="signal-dot blue"></span><span>Watch for extremes: Bulls >60% or Bears >50%</span></div>
@@ -1066,11 +1139,14 @@
           </div>
           <div class="kpi-explain">Ratio of put options (bets on decline) to call options (bets on rise). Below 0.7 = dangerous complacency — investors aren't buying protection. Above 1.2 = extreme fear = often near a market bottom. Use 10-day moving average to smooth noise.</div>
           <div class="kpi-analogy">🎓 Count how many people bought umbrella insurance vs. sunshine holiday insurance before summer. Almost nobody buying umbrellas (low put/call) means investors are overconfident it won't rain. Markets love to rain when everyone's unprepared.</div>
-          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/graph/graph-landing.php?g=1eWnX&width=600&height=280')">📊 Live FRED Chart</button>
+          <button class="chart-toggle-btn" onclick="toggleFred(this,'https://fred.stlouisfed.org/series/VIXCLS')">📊 Live FRED Chart</button>
           <div class="fred-embed">
             <iframe loading="lazy" scrolling="no" frameborder="no" allowtransparency="true" allowfullscreen="true"></iframe>
-            <div class="fred-label">Federal Reserve Bank of St. Louis</div>
-          </div>
+            <div class="fred-open-link">
+              <span>Federal Reserve Bank of St. Louis · CBOE VIX Volatility Index</span>
+              <a href="https://fred.stlouisfed.org/series/VIXCLS" target="_blank">Open full chart on FRED ↗</a>
+            </div>
+            </div>
           <div class="kpi-footer">
             <span class="kpi-source">📊 <a href="https://www.cboe.com/us/options/market_statistics/" target="_blank">CBOE</a> · TradingView: CPCE or CPC</span>
             <div class="kpi-signal"><span class="signal-dot green"></span><span>0.78 — neutral. Spike above 1.2 = potential bottom.</span></div>
@@ -1438,22 +1514,30 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── FRED IFRAME TOGGLE ───────────────────────────────────────────
 function toggleFred(btn, src) {
   const embed = btn.nextElementSibling;
-  const iframe = embed.querySelector('iframe');
   const isVisible = embed.classList.contains('visible');
 
   if (isVisible) {
     embed.classList.remove('visible');
     btn.classList.remove('active');
     btn.textContent = '📊 Live FRED Chart';
-  } else {
-    // Lazy-load the iframe src on first open
-    if (!iframe.src || iframe.src === window.location.href) {
-      iframe.src = src;
-    }
-    embed.classList.add('visible');
-    btn.classList.add('active');
-    btn.textContent = '✕ Close Chart';
+    return;
   }
+
+  // Extract series ID from the FRED series URL
+  const seriesId = src.split('/series/')[1] || '';
+
+  // Build the embedded chart URL using FRED's graph-landing endpoint
+  // FRED allows embedding via their graph-landing page
+  const embedSrc = `https://fred.stlouisfed.org/graph/graph-landing.php?id=${seriesId}&vintage_date=&graph_id=&category_id=&recession_bars=on&fo=open%20sans&ts=12&ns=14&uf=0&unit=lin&rt=0&lw=2&show_obs_values=0&drp=0&cmd=graph`;
+  
+  const iframe = embed.querySelector('iframe');
+  if (iframe && (!iframe.src || iframe.src === window.location.href)) {
+    iframe.src = embedSrc;
+  }
+
+  embed.classList.add('visible');
+  btn.classList.add('active');
+  btn.textContent = '✕ Close Chart';
 }
 </script>
 
