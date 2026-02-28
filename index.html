@@ -168,6 +168,83 @@
     color: var(--orange); border-radius: 3px; text-transform: uppercase;
   }
 
+  /* ── PROBABILITY PHASES ── */
+  .prob-phase {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: default; padding: 8px 14px 8px;
+  }
+  .phase-name { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .phase-prob {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 18px; font-weight: 500; line-height: 1; letter-spacing: 0;
+  }
+  .phase.early     .phase-prob { color: var(--early); }
+  .phase.mid       .phase-prob { color: var(--blue); }
+  .phase.late      .phase-prob { color: var(--orange); }
+  .phase.recession .phase-prob { color: var(--recession); }
+  .prob-phase.dominant { transform: scale(1.07); transition: transform 0.4s; }
+
+  /* ── TOOLTIP ── */
+  .phase-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%; transform: translateX(-50%);
+    width: 290px;
+    background: #141c28;
+    border: 1px solid var(--border-bright);
+    border-radius: 8px; padding: 16px;
+    z-index: 600;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+    pointer-events: none;
+  }
+  .phase-tooltip::after {
+    content: '';
+    position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 7px solid transparent;
+    border-top-color: #2a3448;
+  }
+  .prob-phase:hover .phase-tooltip { display: block; }
+  .tip-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px; font-weight: 700;
+    margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tip-body { display: flex; flex-direction: column; gap: 5px; }
+  .tip-row {
+    display: flex; align-items: flex-start; gap: 7px;
+    font-size: 11px; color: var(--text-dim); line-height: 1.4;
+  }
+  .tip-icon { flex-shrink: 0; font-size: 11px; margin-top: 1px; }
+  .tip-row.pos { color: var(--green); }
+  .tip-row.neg { color: var(--red); }
+  .tip-row.neu { color: var(--orange); }
+  .tip-footer {
+    margin-top: 10px; padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--text-muted); letter-spacing: 1px;
+  }
+
+  /* ── PROBABILITY BAR STRIP ── */
+  .prob-bar-wrap {
+    padding: 6px 40px 10px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+  }
+  .prob-bar-track {
+    height: 5px; border-radius: 3px; overflow: hidden;
+    display: flex; gap: 1px;
+  }
+  .prob-bar-seg { height: 100%; border-radius: 2px; transition: width 1.2s ease; }
+  .prob-bar-labels {
+    display: flex; justify-content: space-between; margin-top: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; letter-spacing: 1px; color: var(--text-muted);
+  }
+
   /* ── MAIN ── */
   .main { padding: 40px; max-width: 1600px; margin: 0 auto; }
 
@@ -452,17 +529,74 @@
 
 <!-- CYCLE BANNER -->
 <div class="cycle-banner">
-  <span class="cycle-label">Current cycle position →</span>
-  <div class="cycle-phases">
-    <div class="phase early">Early</div>
+  <span class="cycle-label">Cycle probability →</span>
+  <div class="cycle-phases" id="cycle-phases-row">
+
+    <!-- EARLY -->
+    <div class="phase early prob-phase" id="phase-early">
+      <div class="phase-name">Early</div>
+      <div class="phase-prob" id="prob-early">—</div>
+      <!-- TOOLTIP -->
+      <div class="phase-tooltip" id="tip-early">
+        <div class="tip-title" style="color:var(--early)">Early Cycle Signals</div>
+        <div class="tip-body" id="tip-body-early"></div>
+      </div>
+    </div>
+
     <div class="phase-arrow">→</div>
-    <div class="phase mid">Mid</div>
+
+    <!-- MID -->
+    <div class="phase mid prob-phase" id="phase-mid">
+      <div class="phase-name">Mid</div>
+      <div class="phase-prob" id="prob-mid">—</div>
+      <div class="phase-tooltip" id="tip-mid">
+        <div class="tip-title" style="color:var(--blue)">Mid Cycle Signals</div>
+        <div class="tip-body" id="tip-body-mid"></div>
+      </div>
+    </div>
+
     <div class="phase-arrow">→</div>
-    <div class="phase late">Late ◉</div>
+
+    <!-- LATE -->
+    <div class="phase late prob-phase" id="phase-late">
+      <div class="phase-name">Late ◉</div>
+      <div class="phase-prob" id="prob-late">—</div>
+      <div class="phase-tooltip" id="tip-late">
+        <div class="tip-title" style="color:var(--orange)">Late Cycle Signals</div>
+        <div class="tip-body" id="tip-body-late"></div>
+      </div>
+    </div>
+
     <div class="phase-arrow">→</div>
-    <div class="phase recession">Recession</div>
+
+    <!-- RECESSION -->
+    <div class="phase recession prob-phase" id="phase-recession">
+      <div class="phase-name">Recession</div>
+      <div class="phase-prob" id="prob-recession">—</div>
+      <div class="phase-tooltip" id="tip-recession">
+        <div class="tip-title" style="color:var(--recession)">Recession Signals</div>
+        <div class="tip-body" id="tip-body-recession"></div>
+      </div>
+    </div>
+
   </div>
-  <span class="current-tag">⚠ Late Cycle — High Caution</span>
+  <span class="current-tag" id="current-tag-banner">⚠ Computing…</span>
+</div>
+
+<!-- PROBABILITY BAR STRIP -->
+<div class="prob-bar-wrap">
+  <div class="prob-bar-track" id="prob-bar-track">
+    <div class="prob-bar-seg" id="pbar-early" style="background:var(--early);width:0%"></div>
+    <div class="prob-bar-seg" id="pbar-mid"   style="background:var(--blue);width:0%"></div>
+    <div class="prob-bar-seg" id="pbar-late"  style="background:var(--orange);width:0%"></div>
+    <div class="prob-bar-seg" id="pbar-recession" style="background:var(--recession);width:0%"></div>
+  </div>
+  <div class="prob-bar-labels">
+    <span style="color:var(--early)">Early</span>
+    <span style="color:var(--blue)">Mid</span>
+    <span style="color:var(--orange)">Late</span>
+    <span style="color:var(--recession)">Recession</span>
+  </div>
 </div>
 
 <!-- MAIN -->
@@ -1321,6 +1455,300 @@ function toggleFred(btn, src) {
     btn.textContent = '✕ Close Chart';
   }
 }
+</script>
+
+<!-- ════════════════════════════════════════════════════
+     PROBABILITY ENGINE
+     Each KPI casts weighted votes for each cycle phase.
+     Scores are normalised to sum to 100%.
+     ════════════════════════════════════════════════════ -->
+<script>
+// ─────────────────────────────────────────────────────
+// KPI SIGNALS
+// Each signal has:
+//   id        — human label
+//   value     — current reading (illustrative, Feb 2026)
+//   weight    — importance multiplier (1–3)
+//   votes()   — returns {early, mid, late, recession} raw scores (0–1 each)
+//   signal()  — returns { label, cls } for tooltip display
+// ─────────────────────────────────────────────────────
+const KPI_SIGNALS = [
+
+  {
+    id: 'Yield Curve (2s10s)',
+    weight: 3,
+    value: '+0.30%',
+    // Re-steepening after long inversion = classic late-cycle / pre-recession
+    votes: () => ({ early: 0.05, mid: 0.10, late: 0.65, recession: 0.20 }),
+    signal: () => ({ label: 'Re-steepening after inversion — pre-recession classic pattern', cls: 'neu' }),
+  },
+
+  {
+    id: 'HY Credit Spreads',
+    weight: 3,
+    value: '320 bps',
+    // Elevated but not panic — late cycle
+    votes: () => ({ early: 0.05, mid: 0.15, late: 0.60, recession: 0.20 }),
+    signal: () => ({ label: '320 bps — elevated. Alarm at 500 bps. Late-cycle stress building.', cls: 'neu' }),
+  },
+
+  {
+    id: 'M2 Money Supply YoY',
+    weight: 2,
+    value: '+3.2%',
+    // Back positive but slowly — mid/late
+    votes: () => ({ early: 0.15, mid: 0.40, late: 0.35, recession: 0.10 }),
+    signal: () => ({ label: '+3.2% YoY — back positive after historic contraction. Recovery signal.', cls: 'pos' }),
+  },
+
+  {
+    id: 'Real Fed Funds Rate',
+    weight: 3,
+    value: '~2.1%',
+    // Deeply restrictive = late cycle pressure
+    votes: () => ({ early: 0.02, mid: 0.08, late: 0.65, recession: 0.25 }),
+    signal: () => ({ label: '~2.1% real rate — historically contractionary. Late-cycle pressure.', cls: 'neg' }),
+  },
+
+  {
+    id: '5yr/5yr Inflation Expectations',
+    weight: 2,
+    value: '2.41%',
+    // Just above target — mid/late
+    votes: () => ({ early: 0.10, mid: 0.35, late: 0.45, recession: 0.10 }),
+    signal: () => ({ label: '2.41% — marginally above 2% target. Inflation not fully tamed.', cls: 'neu' }),
+  },
+
+  {
+    id: 'CPI Inflation',
+    weight: 2,
+    value: '~2.9%',
+    // Declining but sticky — late cycle
+    votes: () => ({ early: 0.08, mid: 0.25, late: 0.52, recession: 0.15 }),
+    signal: () => ({ label: '~2.9% YoY — declining but sticky. "Last mile" problem persists.', cls: 'neu' }),
+  },
+
+  {
+    id: 'CAPE Ratio (Shiller P/E)',
+    weight: 2,
+    value: '~35×',
+    // Extreme valuation = late cycle / risk of reversal
+    votes: () => ({ early: 0.02, mid: 0.08, late: 0.55, recession: 0.35 }),
+    signal: () => ({ label: '~35× — top decile historically. Implies poor 10yr forward returns.', cls: 'neg' }),
+  },
+
+  {
+    id: 'PPI vs. CPI Spread',
+    weight: 1,
+    value: 'Narrow',
+    // Compressing = margin pressure easing = slight positive
+    votes: () => ({ early: 0.20, mid: 0.40, late: 0.30, recession: 0.10 }),
+    signal: () => ({ label: 'Spread narrowing — margin pressure easing. Mildly constructive.', cls: 'pos' }),
+  },
+
+  {
+    id: 'Initial Jobless Claims',
+    weight: 2,
+    value: '218k/week',
+    // Still healthy — early/mid signal
+    votes: () => ({ early: 0.30, mid: 0.40, late: 0.25, recession: 0.05 }),
+    signal: () => ({ label: '218k/week — still healthy. No deterioration signal yet.', cls: 'pos' }),
+  },
+
+  {
+    id: 'Sahm Rule',
+    weight: 3,
+    value: '0.20',
+    // Well below 0.50 trigger — not recession
+    votes: () => ({ early: 0.20, mid: 0.35, late: 0.40, recession: 0.05 }),
+    signal: () => ({ label: '0.20 — safe. Trigger at 0.50. No systemic labour deterioration.', cls: 'pos' }),
+  },
+
+  {
+    id: 'JOLTS Quits Rate',
+    weight: 2,
+    value: '2.1%',
+    // Declining from peak — late cycle confidence softening
+    votes: () => ({ early: 0.05, mid: 0.20, late: 0.60, recession: 0.15 }),
+    signal: () => ({ label: '2.1% and declining — workers losing confidence. Late-cycle signal.', cls: 'neg' }),
+  },
+
+  {
+    id: 'US Dollar (DXY)',
+    weight: 2,
+    value: '107.2',
+    // Elevated strong dollar = late cycle global tightening
+    votes: () => ({ early: 0.05, mid: 0.15, late: 0.55, recession: 0.25 }),
+    signal: () => ({ label: 'DXY 107 — elevated. Strong dollar tightens global conditions.', cls: 'neg' }),
+  },
+
+  {
+    id: 'Equity Risk Premium',
+    weight: 3,
+    value: '~0.3%',
+    // Near zero = equities priced like bonds are unattractive — late cycle
+    votes: () => ({ early: 0.02, mid: 0.08, late: 0.55, recession: 0.35 }),
+    signal: () => ({ label: '~0.3% — near zero. Bonds almost as attractive as stocks. Danger.', cls: 'neg' }),
+  },
+
+  {
+    id: 'AAII Sentiment (Bull–Bear)',
+    weight: 1,
+    value: '+8% spread',
+    // Mildly bullish — not extreme either way, slight late-cycle
+    votes: () => ({ early: 0.15, mid: 0.30, late: 0.40, recession: 0.15 }),
+    signal: () => ({ label: '+8% bull-bear spread — mild optimism. Not extreme, monitoring.', cls: 'neu' }),
+  },
+
+  {
+    id: 'FM Cash Level (BofA)',
+    weight: 2,
+    value: '4.0%',
+    // Low cash = fully invested = complacency = late cycle
+    votes: () => ({ early: 0.05, mid: 0.15, late: 0.60, recession: 0.20 }),
+    signal: () => ({ label: '4.0% cash — near danger zone (<4%). Little dry powder remaining.', cls: 'neg' }),
+  },
+
+  {
+    id: 'Put/Call Ratio',
+    weight: 1,
+    value: '0.78',
+    // Neutral — not extreme
+    votes: () => ({ early: 0.15, mid: 0.35, late: 0.38, recession: 0.12 }),
+    signal: () => ({ label: '0.78 — neutral. No extreme complacency or fear detected.', cls: 'neu' }),
+  },
+
+];
+
+// ─────────────────────────────────────────────────────
+// COMPUTE WEIGHTED PROBABILITY
+// ─────────────────────────────────────────────────────
+function computeProbabilities() {
+  let totals = { early: 0, mid: 0, late: 0, recession: 0 };
+  let totalWeight = 0;
+
+  KPI_SIGNALS.forEach(kpi => {
+    const v = kpi.votes();
+    const w = kpi.weight;
+    totals.early     += v.early     * w;
+    totals.mid       += v.mid       * w;
+    totals.late      += v.late      * w;
+    totals.recession += v.recession * w;
+    totalWeight += w;
+  });
+
+  // Normalise so all four phases sum to 100%
+  const sum = totals.early + totals.mid + totals.late + totals.recession;
+  return {
+    early:     Math.round((totals.early     / sum) * 100),
+    mid:       Math.round((totals.mid       / sum) * 100),
+    late:      Math.round((totals.late      / sum) * 100),
+    recession: Math.round((totals.recession / sum) * 100),
+  };
+}
+
+// ─────────────────────────────────────────────────────
+// BUILD TOOLTIP CONTENT for each phase
+// ─────────────────────────────────────────────────────
+function buildTooltip(phase) {
+  // Sort KPIs by how strongly they vote for this phase (weighted)
+  const sorted = [...KPI_SIGNALS].sort((a, b) => {
+    const va = a.votes()[phase] * a.weight;
+    const vb = b.votes()[phase] * b.weight;
+    return vb - va; // descending
+  });
+
+  // Top 5 supporting signals + top 2 contradicting
+  const supporting   = sorted.slice(0, 5);
+  const contradicting = [...KPI_SIGNALS].sort((a, b) => {
+    const va = a.votes()[phase] * a.weight;
+    const vb = b.votes()[phase] * b.weight;
+    return va - vb; // ascending = weakest supporters = contradicting
+  }).slice(0, 2);
+
+  let html = '';
+
+  html += `<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px;">Supporting signals</div>`;
+  supporting.forEach(kpi => {
+    const s = kpi.signal();
+    const strength = kpi.votes()[phase];
+    const icon = strength > 0.5 ? '●' : strength > 0.3 ? '◐' : '○';
+    html += `<div class="tip-row ${s.cls}"><span class="tip-icon">${icon}</span><span><strong>${kpi.id}:</strong> ${s.label}</span></div>`;
+  });
+
+  html += `<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;margin:8px 0 5px;">Contradicting signals</div>`;
+  contradicting.forEach(kpi => {
+    const s = kpi.signal();
+    html += `<div class="tip-row neg"><span class="tip-icon">✕</span><span><strong>${kpi.id}:</strong> ${s.label}</span></div>`;
+  });
+
+  return html;
+}
+
+// ─────────────────────────────────────────────────────
+// RENDER EVERYTHING
+// ─────────────────────────────────────────────────────
+function renderProbabilities() {
+  const probs = computeProbabilities();
+  const phases = ['early', 'mid', 'late', 'recession'];
+
+  // Find dominant phase
+  const dominant = phases.reduce((a, b) => probs[a] > probs[b] ? a : b);
+
+  // Phase labels and colours for the banner tag
+  const phaseInfo = {
+    early:     { label: '🌱 Early Cycle — Be Greedy',      color: 'var(--early)' },
+    mid:       { label: '📈 Mid Cycle — Stay Invested',     color: 'var(--blue)' },
+    late:      { label: '⚠ Late Cycle — High Caution',     color: 'var(--orange)' },
+    recession: { label: '🔴 Recession Risk — Defensive',   color: 'var(--recession)' },
+  };
+
+  phases.forEach(phase => {
+    // Probability number
+    document.getElementById(`prob-${phase}`).textContent = probs[phase] + '%';
+
+    // Dominant highlight
+    const el = document.getElementById(`phase-${phase}`);
+    el.classList.toggle('dominant', phase === dominant);
+
+    // Tooltip body
+    document.getElementById(`tip-body-${phase}`).innerHTML = buildTooltip(phase);
+
+    // Tooltip footer
+    const footer = document.createElement('div');
+    footer.className = 'tip-footer';
+    footer.textContent = `Based on ${KPI_SIGNALS.length} weighted KPI signals · Feb 2026`;
+    const tipBody = document.getElementById(`tip-body-${phase}`);
+    // Remove old footer if exists
+    const old = tipBody.parentElement.querySelector('.tip-footer');
+    if (old) old.remove();
+    tipBody.after(footer);
+
+    // Probability bar segment widths
+    document.getElementById(`pbar-${phase}`).style.width = probs[phase] + '%';
+  });
+
+  // Banner tag
+  const tag = document.getElementById('current-tag-banner');
+  tag.textContent = phaseInfo[dominant].label;
+  tag.style.background = `color-mix(in srgb, ${phaseInfo[dominant].color} 15%, transparent)`;
+  tag.style.borderColor = `color-mix(in srgb, ${phaseInfo[dominant].color} 40%, transparent)`;
+  tag.style.color = phaseInfo[dominant].color;
+
+  // Also update bottom score bar overall label
+  const scoreOverall = document.querySelector('.score-overall');
+  if (scoreOverall) {
+    scoreOverall.innerHTML = phaseInfo[dominant].label.replace('·', '') +
+      ` <span>— ${probs[dominant]}% probability</span>`;
+    scoreOverall.style.color = phaseInfo[dominant].color;
+  }
+}
+
+// Run after sparklines are drawn
+document.addEventListener('DOMContentLoaded', () => {
+  // Slight delay so sparklines render first
+  setTimeout(renderProbabilities, 200);
+});
 </script>
 
 </body>
